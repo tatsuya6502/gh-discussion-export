@@ -53,7 +53,7 @@ Fail immediately on any pagination error (don't attempt partial results).
 ## Risks / Trade-offs
 
 | Risk | Mitigation |
-|------|------------|
+| ------ | ------------ |
 | Rate limiting during large discussions | The fetch will fail with 403; user can retry after quota resets |
 | Memory usage for very large discussions | All data is held in memory; acceptable for CLI tool with typical discussion sizes |
 | Discussion deleted during fetch | Will fail mid-pagination; acceptable as hard error per spec |
