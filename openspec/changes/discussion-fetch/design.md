@@ -3,7 +3,7 @@
 GitHub Discussions can have hundreds or thousands of comments and replies. The GraphQL API returns these in paginated form using cursor-based pagination. The graphql-client change provides the basic query execution, but doesn't handle pagination. This change implements the pagination logic to retrieve complete discussion data.
 
 **Constraints:**
-- MUST paginate until completion (per specs.md requirement #6)
+- MUST paginate until completion (per `specs/discussion-fetching/spec.md` "Paginate comments" requirement)
 - MUST maintain chronological ordering (createdAt ascending)
 - MUST handle deleted users (null author → `<deleted>`)
 - Discussion number is provided by user; owner/repo from CLI args
@@ -43,12 +43,12 @@ Maintain parent-child relationships in memory using nested vectors.
 ### Deleted User Handling
 Replace null author with placeholder string `<deleted>` during fetch.
 
-**Rationale:** Per specs.md section #9, we should handle missing authors by printing `<deleted>`. Doing this during fetch simplifies the output layer - it doesn't need to handle Option types. This is a data normalization concern, not presentation.
+**Rationale:** Per `specs/discussion-fetching/spec.md` "Handle deleted authors" requirement, we should handle missing authors by printing `<deleted>`. Doing this during fetch simplifies the output layer - it doesn't need to handle Option types. This is a data normalization concern, not presentation.
 
 ### Error Handling During Pagination
 Fail immediately on any pagination error (don't attempt partial results).
 
-**Rationale:** Per specs.md section #9, pagination failure is a hard error. Attempting to return partial data would violate the "lossless" requirement. The user should see a clear error and retry.
+**Rationale:** Per `specs/discussion-fetching/spec.md` "Propagate pagination errors" requirement, pagination failure is a hard error. Attempting to return partial data would violate the "lossless" requirement. The user should see a clear error and retry.
 
 ## Risks / Trade-offs
 
