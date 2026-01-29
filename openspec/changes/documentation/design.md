@@ -98,7 +98,7 @@ The README.md must include the following sections with specific content:
 ## Risks / Trade-offs
 
 | Risk | Mitigation |
-| ---| --- |
+| --- | --- |
 | Documentation becomes outdated | Keep examples simple and focused on core functionality that won't change |
 | Installation instructions may be wrong | Test instructions on fresh system before finalizing |
 
