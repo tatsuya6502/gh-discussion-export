@@ -1,9 +1,9 @@
 ## Context
 
-Per specs.md section #7, the output format is strictly defined with a fixed structure. The Markdown must preserve the discussion content losslessly for use as LLM input. The heading hierarchy reflects thread structure: original post (##), comments (###), replies (####). This change implements that formatting.
+Per `specs/markdown-output-generation/spec.md` "Heading hierarchy" requirement, the output format is strictly defined with a fixed structure. The Markdown must preserve the discussion content losslessly for use as LLM input. The heading hierarchy reflects thread structure: original post (##), comments (###), replies (####). This change implements that formatting.
 
 **Constraints:**
-- MUST follow exact format from specs.md #7
+- MUST follow exact format from `specs/markdown-output-generation/spec.md`
 - MUST use UTF-8 encoding, LF line endings
 - MUST emit body verbatim (no HTML escaping, no Markdown prettification)
 - Heading hierarchy: ## (original post), ### (comment), #### (reply)
@@ -33,12 +33,12 @@ Build output as a single String using `format!` macros and string concatenation.
 ### Author Format
 Use `_author: <login> (<timestamp>)_` format (italic with underscore).
 
-**Rationale:** This format is specified in specs.md #7. The underscore creates italic Markdown which makes author info visually distinct from content. The timestamp is ISO8601 for machine parsing.
+**Rationale:** This format is specified in `specs/markdown-output-generation/spec.md` "Comment formatting" scenario. The underscore creates italic Markdown which makes author info visually distinct from content. The timestamp is ISO8601 for machine parsing.
 
 ### Header Information
 Include: title, discussion ID (owner/repo#number), URL, created at, author.
 
-**Rationale:** Per specs.md, these fields provide provenance and traceability. The URL allows cross-referencing back to the source. The discussion ID uniquely identifies the discussion.
+**Rationale:** Per `specs/markdown-output-generation/spec.md`, these fields provide provenance and traceability. The URL allows cross-referencing back to the source. The discussion ID uniquely identifies the discussion.
 
 ### Body Handling: Verbatim copy
 Write body content exactly as received from API with no processing.
@@ -53,7 +53,7 @@ Use `std::fs::write` for file output.
 ### Line Endings: Explicit LF
 Ensure LF line endings by using `\n` in format strings (not `\r\n`).
 
-**Rationale:** Per specs.md #8, line endings must be LF. On Windows, `\n` in Rust strings converts to CRLF in some cases, so we must ensure we're writing actual LF bytes.
+**Rationale:** Per `specs/markdown-output-generation/spec.md` "File encoding" scenario, line endings must be LF. On Windows, `\n` in Rust strings converts to CRLF in some cases, so we must ensure we're writing actual LF bytes.
 
 ## Risks / Trade-offs
 
