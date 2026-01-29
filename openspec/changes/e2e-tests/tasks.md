@@ -11,6 +11,7 @@
 - [ ] 2.3 Implement `assert_output_contains(path, text)` helper function
 - [ ] 2.4 Implement `assert_output_format(path)` validation function
 - [ ] 2.5 Implement cleanup helper to remove test output files
+- [ ] 2.6 Implement retry helper for transient network failures (with exponential backoff and max attempts, applied to network calls in `run_export`)
 
 ## 3. Basic E2E Test
 
@@ -57,8 +58,9 @@
 - [ ] 7.2 Add test for invalid discussion number
 - [ ] 7.3 Assert non-zero exit status
 - [ ] 7.4 Assert error message contains "not found"
-- [ ] 7.5 Add test for unauthenticated execution (temporarily revoke auth)
+- [ ] 7.5 Add test for unauthenticated execution (temporarily make `gh` command unavailable by modifying PATH or running in subprocess without gh in PATH)
 - [ ] 7.6 Assert error message mentions authentication
+- [ ] 7.7 Document that this test requires special handling and should be marked as manual or `#[ignore]` with clear instructions
 
 ## 8. Idempotency Test
 
