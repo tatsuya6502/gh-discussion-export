@@ -41,11 +41,11 @@ The system SHALL include tests that validate the exact output format.
 
 #### Scenario: Heading hierarchy validation
 - **WHEN** output is generated
-- **THEN** heading levels are correct (## for sections, ### for comments, #### for replies)
+- **THEN** heading levels are correct (# for discussion title, ## for sections, ### for comments, #### for replies)
 
 #### Scenario: Author format validation
 - **WHEN** output is generated
-- **THEN** author lines use italic format: `_author: <login> (<timestamp>)_`
+- **THEN** author lines use italic format: `_author: <login> (<ISO8601>)_`
 
 ### Requirement: Error path tests
 The system SHALL include tests that verify error handling.
