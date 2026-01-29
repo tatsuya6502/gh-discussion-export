@@ -54,6 +54,47 @@ Keep CONTRIBUTING.md simple with basic setup and workflow.
 
 **Rationale:** This is a small tool, not a large project. Extensive contribution guidelines would be overkill. Basic "fork, branch, PR" workflow is sufficient.
 
+### README Content Requirements
+The README.md must include the following sections with specific content:
+
+**Project Description:**
+- Explains what the tool does (exports GitHub Discussions to Markdown)
+- Mentions the output format (single Markdown file)
+- References the fidelity goal (lossless archive, content preserved verbatim except heading escape for document structure)
+
+**Installation Instructions:**
+- `cargo install` command for Rust users
+- Building from source instructions (`cargo build --release`)
+- Pre-compiled binary option (if available in future)
+
+**Prerequisites:**
+- Explicitly lists GitHub CLI (`gh`) requirement
+- Explains `gh auth login` requirement
+- Mentions Rust toolchain requirement for building from source
+
+**Usage Documentation:**
+- Shows all command-line arguments with explanations
+- Indicates which arguments are required vs optional
+- Mentions `--help` flag for built-in help
+- Includes copy-pasteable examples:
+  - Basic usage example with real repo, owner, and discussion number
+  - Output customization example showing `--output` argument
+
+**Output Format Description:**
+- Explains the Markdown structure
+- Mentions heading hierarchy (# for discussion title, ## for sections, ### for comments, #### for replies)
+- States lossless fidelity (content preserved verbatim except heading escape for document structure)
+
+**Contribution Guidelines:**
+- Links to or summarizes CONTRIBUTING.md
+- Explains development setup (clone, build, test)
+
+**License Information:**
+- Specifies the license (MIT)
+- Includes copyright notice if applicable
+
+**Rationale:** These content requirements ensure the README is comprehensive and user-friendly, addressing common questions upfront and reducing support burden.
+
 ## Risks / Trade-offs
 
 | Risk | Mitigation |
