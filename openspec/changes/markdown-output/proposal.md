@@ -1,6 +1,6 @@
 ## Why
 
-The Discussion data has been fetched, but needs to be formatted as a lossless Markdown archive file. This change implements the output generation that creates the properly formatted `discussion.md` file according to the exact specification in specs.md.
+The Discussion data has been fetched, but needs to be formatted as a lossless Markdown archive file. This change implements the output generation that creates the properly formatted `discussion.md` file according to the exact specification in `specs/markdown-output-generation/spec.md`.
 
 ## What Changes
 
