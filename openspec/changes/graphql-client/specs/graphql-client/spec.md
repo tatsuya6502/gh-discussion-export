@@ -12,7 +12,7 @@ The system SHALL provide a function to execute GraphQL queries against GitHub's 
 - **THEN** system returns error indicating 401 status
 
 #### Scenario: Rate limit exceeded
-- **WHEN** query execution returns 403 status
+- **WHEN** query execution returns 403 or 429 status
 - **THEN** system returns error indicating rate limit exceeded
 
 ### Requirement: GraphQL query construction
@@ -46,7 +46,7 @@ The system SHALL properly handle nullable fields in GraphQL responses (e.g., del
 
 #### Scenario: Author is null
 - **WHEN** response contains null author field
-- **THEN** system serializes as `<deleted>` placeholder
+- **THEN** system deserializes as `<deleted>` placeholder
 
 #### Scenario: Optional fields missing
 - **WHEN** optional fields are not present in response

@@ -24,7 +24,8 @@ The tool is built from a detailed specification originally captured in `specs.md
 
 1. **Lossless Fidelity**
    - Body content MUST be emitted verbatim
-   - No HTML rendering or escaping
+   - **Exception:** Markdown heading syntax (`#`) at line start is escaped with backslash to preserve document structure (see `openspec/changes/markdown-output/design.md` for rationale)
+   - No HTML rendering or other escaping
    - No trimming of whitespace or trailing newlines
    - UTF-8 encoding, LF line endings
 
@@ -77,12 +78,12 @@ src/
 
 ### Critical Paths
 1. **Pagination loops** in `fetch.rs` - must use `pageInfo.hasNextPage` and `pageInfo.endCursor`
-2. **Body content handling** in `output.rs` - must be verbatim (no escaping)
+2. **Body content handling** in `output.rs` - must be verbatim except for heading escape (prefixing `#` at line start with backslash)
 3. **Deleted user handling** - null authors should become `<deleted>` string
 4. **Authentication error handling** - clear messages directing users to `gh auth login`
 
 ### Common Pitfalls
-- ⚠️ Don't add HTML escaping to body content (violates lossless requirement)
+- ⚠️ Don't add HTML or other escaping to body content (violates lossless requirement; heading escape is the only exception)
 - ⚠️ Don't stop pagination early (spec requires "MUST paginate until completion")
 - ⚠️ Don't use the REST API (GraphQL is required)
 - ⚠️ Don't manage PATs directly (must use `gh auth token`)
