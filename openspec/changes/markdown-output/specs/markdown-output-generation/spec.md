@@ -26,6 +26,12 @@ The system SHALL generate the original post section with author and body.
 - **AND** body content follows author line
 - **AND** section ends with `---` separator
 
+#### Scenario: Original post with deleted author
+- **WHEN** original post author is `<deleted>`
+- **THEN** author line is `_author: <deleted> (<ISO8601>)_`
+- **AND** body content formatting rules still apply (verbatim, heading escape, CRLF normalization)
+- **AND** section structure remains unchanged
+
 #### Scenario: Body is verbatim
 - **WHEN** body content is written
 - **THEN** body is written exactly as received from API
@@ -53,12 +59,25 @@ The system SHALL generate a comments section containing all comments with nested
 - **AND** author line is `_author: <login> (<ISO8601>)_`
 - **AND** body content follows author line
 
+#### Scenario: Comment with deleted author
+- **WHEN** comment author is `<deleted>`
+- **THEN** author line is `_author: <deleted> (<ISO8601>)_`
+- **AND** body content formatting rules still apply (verbatim, heading escape, CRLF normalization)
+- **AND** comment structure and heading remain unchanged
+
 #### Scenario: Reply formatting
 - **WHEN** a reply is formatted
 - **THEN** reply is nested under parent comment
 - **AND** reply starts with `#### Reply <N.M>` where N is comment number, M is reply number
 - **AND** author line is `_author: <login> (<ISO8601>)_`
 - **AND** body content follows author line
+
+#### Scenario: Reply with deleted author
+- **WHEN** reply author is `<deleted>`
+- **THEN** author line is `_author: <deleted> (<ISO8601>)_`
+- **AND** body content formatting rules still apply (verbatim, heading escape, CRLF normalization)
+- **AND** reply structure and heading remain unchanged
+- **AND** reply remains nested under parent comment
 
 #### Scenario: Multiple comments
 - **WHEN** multiple comments exist
