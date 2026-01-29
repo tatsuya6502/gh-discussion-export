@@ -55,7 +55,7 @@ Use `std::fs::write` for file output.
 ### Line Endings: Explicit LF
 Ensure LF line endings by using `\n` in format strings (not `\r\n`).
 
-**Rationale:** Per `specs/markdown-output-generation/spec.md` "File encoding" scenario, line endings must be LF. On Windows, `\n` in Rust strings converts to CRLF in some cases, so we must ensure we're writing actual LF bytes.
+**Rationale:** Per `specs/markdown-output-generation/spec.md` "File encoding" scenario, line endings must be LF. `std::fs::write` writes bytes exactly as-is without conversion. While our format strings use `\n`, the real risk is that input body content from the API might already contain CRLF sequences. To ensure pure LF output, we must normalize any CRLF (`\r\n`) in input content to LF (`\n`) before writing.
 
 ## Risks / Trade-offs
 
