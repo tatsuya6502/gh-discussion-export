@@ -40,10 +40,12 @@ Include: title, discussion ID (owner/repo#number), URL, created at, author.
 
 **Rationale:** Per `specs/markdown-output-generation/spec.md`, these fields provide provenance and traceability. The URL allows cross-referencing back to the source. The discussion ID uniquely identifies the discussion.
 
-### Body Handling: Verbatim copy
-Write body content exactly as received from API with no processing.
+### Body Handling: Verbatim copy with heading escape
+Write body content exactly as received from API with minimal processing.
 
-**Rationale:** The tool is designed for "lossless" archival. Any processing (HTML escaping, Markdown normalization, whitespace trimming) would lose information. The LLM downstream can handle raw content.
+**Processing rule:** Escape Markdown heading syntax (`#`) at the start of body lines by prefixing with backslash (e.g., `##` → `\##`).
+
+**Rationale:** The tool is designed for "lossless" archival. Body content should be preserved verbatim for human readability and LLM processing. However, unescaped headings in body content would break the document structure (e.g., a user's `## My Section` inside a reply would be interpreted as a new section heading). Backslash escaping is the minimal change needed to preserve document structure while keeping content readable when rendered. This is a structural necessity, not content modification.
 
 ### File Writing: Direct std::fs::write
 Use `std::fs::write` for file output.
