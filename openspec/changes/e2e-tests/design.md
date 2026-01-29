@@ -3,10 +3,11 @@
 Unit tests mock the GitHub API, which is good for isolation but doesn't prove the tool works with real data. End-to-end tests call the actual GitHub API to validate the complete pipeline. This change focuses on integration testing against real discussions.
 
 **Constraints:**
-- Tests must be runnable by any developer with GitHub CLI auth
+- Most tests require GitHub CLI authentication (run via `gh auth token`)
 - Tests should use public discussions to avoid repository access issues
 - Tests should be idempotent (can run multiple times safely)
 - Tests must handle rate limiting gracefully
+- One dedicated error-path test validates unauthenticated behavior (requires temporarily unsetting credentials)
 
 ## Goals / Non-Goals
 
