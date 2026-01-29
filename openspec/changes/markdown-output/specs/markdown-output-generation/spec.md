@@ -33,6 +33,7 @@ The system SHALL generate the original post section with author and body.
 - **AND** no Markdown prettification is performed
 - **AND** whitespace is preserved
 - **AND** Markdown heading syntax (`#`) at line start is escaped with backslash to preserve document structure
+- **AND** CRLF line endings in input are normalized to LF
 
 ### Requirement: Generate comments section
 The system SHALL generate a comments section containing all comments with nested replies.

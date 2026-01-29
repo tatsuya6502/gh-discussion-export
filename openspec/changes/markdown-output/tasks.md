@@ -21,7 +21,8 @@
 - [ ] 3.3 Add author line: `_author: <login> (<ISO8601>)_`
 - [ ] 3.4 Add body content verbatim (except heading escape)
 - [ ] 3.5 Implement heading escape: prefix `#` at line start with backslash
-- [ ] 3.6 End with `---` separator
+- [ ] 3.6 Implement CRLF normalization: replace `\r\n` with `\n` in body content
+- [ ] 3.7 End with `---` separator
 
 ## 4. Comments Section
 
@@ -32,10 +33,12 @@
 - [ ] 4.5 Add author line: `_author: <login> (<ISO8601>)_`
 - [ ] 4.6 Add comment body verbatim (except heading escape)
 - [ ] 4.7 Apply heading escape to comment body
-- [ ] 4.8 For each reply, add `#### Reply <N.M>` heading
-- [ ] 4.9 Add reply author line: `_author: <login> (<ISO8601>)_`
-- [ ] 4.10 Add reply body verbatim (except heading escape)
-- [ ] 4.11 Apply heading escape to reply body
+- [ ] 4.8 Apply CRLF normalization to comment body
+- [ ] 4.9 For each reply, add `#### Reply <N.M>` heading
+- [ ] 4.10 Add reply author line: `_author: <login> (<ISO8601>)_`
+- [ ] 4.11 Add reply body verbatim (except heading escape)
+- [ ] 4.12 Apply heading escape to reply body
+- [ ] 4.13 Apply CRLF normalization to reply body
 
 ## 5. Output Formatting
 
@@ -60,8 +63,9 @@
 - [ ] 7.5 Add test for replies with proper nesting
 - [ ] 7.6 Add test for heading hierarchy (##/###/####)
 - [ ] 7.7 Add test for body verbatim handling with heading escape (escaping `#` at line start)
-- [ ] 7.8 Add test for file writing with specified path
-- [ ] 7.9 Add test for default output path
+- [ ] 7.8 Add test for CRLF normalization (input with `\r\n` becomes `\n`)
+- [ ] 7.9 Add test for file writing with specified path
+- [ ] 7.10 Add test for default output path
 
 ## 8. Integration with Models
 
