@@ -1,73 +1,58 @@
 ## ADDED Requirements
 
-### Requirement: Discussion data model
-The system SHALL define a `Discussion` struct matching GitHub's GraphQL Discussion type.
+### Requirement: Parse Discussion data from GitHub GraphQL API
+The system SHALL parse Discussion data from JSON responses received from the GitHub GraphQL API.
 
-#### Scenario: Required fields
-- **WHEN** Discussion struct is defined
-- **THEN** it includes fields: title, number, url, createdAt, body (author, body, createdAt)
-- **AND** all fields use appropriate Rust types (String, DateTime, etc.)
+#### Scenario: Valid Discussion response
+- **WHEN** GitHub API returns a valid Discussion JSON response
+- **THEN** system extracts the discussion data including title, number, URL, creation date, and body
+- **AND** the data is accessible for further processing
 
-#### Scenario: Comments relationship
-- **WHEN** Discussion struct is defined
-- **THEN** it includes a comments field containing vector of Comment structs
+#### Scenario: Discussion with deleted author
+- **WHEN** Discussion author has been deleted from GitHub
+- **THEN** system handles null author field without error
+- **AND** processes the remaining discussion data normally
 
-### Requirement: Comment data model
-The system SHALL define a `Comment` struct matching GitHub's GraphQL Comment type.
+#### Scenario: Discussion with comments and replies
+- **WHEN** Discussion contains comments and those comments contain replies
+- **THEN** system successfully parses the nested comment and reply structures
+- **AND** preserves the hierarchical relationship
 
-#### Scenario: Required fields
-- **WHEN** Comment struct is defined
-- **THEN** it includes fields: id, databaseId, author (login), createdAt, body
+### Requirement: Parse pagination metadata
+The system SHALL parse pagination information from GraphQL responses.
 
-#### Scenario: Replies relationship
-- **WHEN** Comment struct is defined
-- **THEN** it includes a replies field containing vector of Reply structs
+#### Scenario: Response with hasNextPage
+- **WHEN** GraphQL response includes `hasNextPage: true`
+- **THEN** system extracts the pagination state indicating more data is available
+- **AND** provides the cursor for the next page if present
 
-#### Scenario: Pagination metadata
-- **WHEN** Comment struct is defined
-- **THEN** it includes pageInfo with hasNextPage, endCursor
+#### Scenario: Response on last page
+- **WHEN** GraphQL response includes `hasNextPage: false`
+- **THEN** system extracts the pagination state indicating no more data is available
+- **AND** no next cursor is provided
 
-### Requirement: Reply data model
-The system SHALL define a `Reply` struct matching GitHub's GraphQL CommentReply type.
+### Requirement: Detect GraphQL errors
+The system SHALL detect and report errors from GraphQL responses.
 
-#### Scenario: Required fields
-- **WHEN** Reply struct is defined
-- **THEN** it includes fields: id, databaseId, author (login), createdAt, body
+#### Scenario: GraphQL response contains errors field
+- **WHEN** GitHub API returns a response with the `errors` field present
+- **THEN** system identifies that an error occurred
+- **AND** reports the error to the caller
 
-### Requirement: Author data model
-The system SHALL define an `Author` struct representing GitHub user or organization.
+#### Scenario: Partial data with errors
+- **WHEN** GraphQL response contains both data and errors
+- **THEN** system treats the response as erroneous
+- **AND** does not use partial data
 
-#### Scenario: Required fields
-- **WHEN** Author struct is defined
-- **THEN** it includes login field (String)
-- **AND** author is optional to handle deleted users
+### Requirement: Handle nested data structures
+The system SHALL parse deeply nested data structures from GraphQL responses.
 
-### Requirement: PageInfo data model
-The system SHALL define a `PageInfo` struct for GraphQL pagination metadata.
+#### Scenario: Comment with null author
+- **WHEN** a comment's author has been deleted (null field)
+- **THEN** system handles the missing author information
+- **AND** processes the comment's remaining data
 
-#### Scenario: Required fields
-- **WHEN** PageInfo struct is defined
-- **THEN** it includes hasNextPage (bool) and endCursor (Option<String>)
-
-### Requirement: Serde deserialization
-All data models SHALL derive `Deserialize` trait to support JSON parsing.
-
-#### Scenario: Deserialize from JSON
-- **WHEN** JSON response is received from GitHub API
-- **THEN** serde can deserialize JSON into model structs
-
-#### Scenario: Handle field renaming
-- **WHEN** JSON field names use camelCase
-- **THEN** Rust struct fields use snake_case with `#[serde(rename)]` attributes
-
-### Requirement: Response wrapper
-The system SHALL define a top-level response struct matching GraphQL response format.
-
-#### Scenario: Response includes data field
-- **WHEN** response struct is defined
-- **THEN** it includes optional `data` field containing actual discussion data
-- **AND** it includes optional `errors` field for GraphQL errors
-
-#### Scenario: Check for errors
-- **WHEN** response is received
-- **THEN** system checks if `errors` field is present and returns error if so
+#### Scenario: Reply with null author
+- **WHEN** a reply's author has been deleted (null field)
+- **THEN** system handles the missing author information
+- **AND** processes the reply's remaining data

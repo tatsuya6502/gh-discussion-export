@@ -1,6 +1,6 @@
 ## Why
 
-The GraphQL client provides the capability to execute queries, but the full discussion data requires handling pagination for both comments and replies. This change implements the data fetching logic that retrieves complete discussion threads by paginating through all comments and replies.
+The GraphQL client provides the capability to execute queries, but the full discussion data requires handling pagination for both comments and replies. This change implements the data-fetching logic that retrieves complete discussion threads by paginating through all comments and replies.
 
 ## What Changes
 
