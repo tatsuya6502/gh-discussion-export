@@ -85,4 +85,4 @@ The README SHALL describe the output format to set user expectations.
 - **WHEN** README output format section is read
 - **THEN** it explains the Markdown structure
 - **AND** it mentions heading hierarchy (##/###/####)
-- **AND** it mentions lossless fidelity (no processing of content)
+- **AND** it mentions lossless fidelity (content preserved verbatim except heading escape for document structure)
