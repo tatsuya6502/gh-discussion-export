@@ -19,8 +19,9 @@
 - [ ] 3.1 Implement `generate_original_post(discussion)` function
 - [ ] 3.2 Add `## Original Post` heading
 - [ ] 3.3 Add author line: `_author: <login> (<ISO8601>)_`
-- [ ] 3.4 Add body content verbatim
-- [ ] 3.5 End with `---` separator
+- [ ] 3.4 Add body content verbatim (except heading escape)
+- [ ] 3.5 Implement heading escape: prefix `#` at line start with backslash
+- [ ] 3.6 End with `---` separator
 
 ## 4. Comments Section
 
@@ -29,10 +30,12 @@
 - [ ] 4.3 Iterate through comments with 1-based index
 - [ ] 4.4 For each comment, add `### Comment <N>` heading
 - [ ] 4.5 Add author line: `_author: <login> (<ISO8601>)_`
-- [ ] 4.6 Add comment body verbatim
-- [ ] 4.7 For each reply, add `#### Reply <N.M>` heading
-- [ ] 4.8 Add reply author line: `_author: <login> (<ISO8601>)_`
-- [ ] 4.9 Add reply body verbatim
+- [ ] 4.6 Add comment body verbatim (except heading escape)
+- [ ] 4.7 Apply heading escape to comment body
+- [ ] 4.8 For each reply, add `#### Reply <N.M>` heading
+- [ ] 4.9 Add reply author line: `_author: <login> (<ISO8601>)_`
+- [ ] 4.10 Add reply body verbatim (except heading escape)
+- [ ] 4.11 Apply heading escape to reply body
 
 ## 5. Output Formatting
 
@@ -56,7 +59,7 @@
 - [ ] 7.4 Add test for comments section with multiple comments
 - [ ] 7.5 Add test for replies with proper nesting
 - [ ] 7.6 Add test for heading hierarchy (##/###/####)
-- [ ] 7.7 Add test for body verbatim handling (no escaping)
+- [ ] 7.7 Add test for body verbatim handling with heading escape (escaping `#` at line start)
 - [ ] 7.8 Add test for file writing with specified path
 - [ ] 7.9 Add test for default output path
 

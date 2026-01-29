@@ -41,6 +41,11 @@ The system SHALL generate a comments section containing all comments with nested
 - **WHEN** comments section is generated
 - **THEN** section starts with `## Comments` heading
 
+#### Scenario: Discussion with no comments
+- **WHEN** discussion has zero comments
+- **THEN** `## Comments` heading is still emitted
+- **AND** no comment or reply subsections follow
+
 #### Scenario: Comment formatting
 - **WHEN** a comment is formatted
 - **THEN** comment starts with `### Comment <N>` where N is 1-indexed position

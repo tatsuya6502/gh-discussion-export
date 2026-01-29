@@ -9,7 +9,7 @@ The Discussion data has been fetched, but needs to be formatted as a lossless Ma
 - Format original post with author info
 - Format comments and replies in hierarchical structure (##/###/#### headings)
 - Write output file with UTF-8 encoding and LF line endings
-- Ensure body content is emitted verbatim (no processing)
+- Ensure body content is emitted verbatim except for heading escape (prefixing `#` at line start with backslash to preserve document structure)
 - Add unit tests for output format validation
 
 ## Capabilities
