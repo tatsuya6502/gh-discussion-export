@@ -23,14 +23,14 @@
 
 ## 4. Authentication Module
 
-- [ ] 4.1 Implement `get_github_token()` function in `src/auth.rs`
-- [ ] 4.2 Use `std::process::Command` to call `gh auth token`
-- [ ] 4.3 Capture stdout and trim whitespace from token output
-- [ ] 4.4 Return `Result<String>` with `Error::Authentication` on failure
-- [ ] 4.5 Check for empty token and return error if found
-- [ ] 4.6 Implement unit tests for successful token retrieval (mock `gh` command)
-- [ ] 4.7 Implement unit tests for `gh` not found (mock Command behavior)
-- [ ] 4.8 Implement unit tests for authentication failure (non-zero exit code)
+- [x] 4.1 Implement `get_github_token()` function in `src/auth.rs`
+- [x] 4.2 Use `std::process::Command` to call `gh auth token`
+- [x] 4.3 Capture stdout and trim whitespace from token output
+- [x] 4.4 Return `Result<String>` with `Error::Authentication` on failure
+- [x] 4.5 Check for empty token and return error if found
+- [x] 4.6 Implement unit tests for successful token retrieval (mock `gh` command)
+- [x] 4.7 Implement unit tests for `gh` not found (mock Command behavior)
+- [x] 4.8 Implement unit tests for authentication failure (non-zero exit code)
 
 ## 5. Main Module Skeleton
 

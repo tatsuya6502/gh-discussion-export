@@ -3,6 +3,10 @@ use thiserror::Error;
 /// Application-specific error types
 #[derive(Error, Debug)]
 pub enum Error {
+    /// GitHub CLI not installed
+    #[error("GitHub CLI not found. Install from https://cli.github.com/")]
+    GitHubCliNotFound,
+
     /// Authentication failed via GitHub CLI
     #[error("Failed to authenticate with GitHub CLI. Run 'gh auth login' to authenticate.")]
     Authentication,
@@ -22,6 +26,15 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_error_github_cli_not_found_display() {
+        let err = Error::GitHubCliNotFound;
+        assert_eq!(
+            err.to_string(),
+            "GitHub CLI not found. Install from https://cli.github.com/"
+        );
+    }
 
     #[test]
     fn test_error_authentication_display() {
