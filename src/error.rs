@@ -62,7 +62,7 @@ mod tests {
     fn test_error_from_io_error() {
         let io_err = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "access denied");
         let err: Error = io_err.into();
-        matches!(err, Error::Io(_));
+        assert!(matches!(err, Error::Io(_)));
     }
 
     #[test]
