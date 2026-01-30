@@ -1,25 +1,25 @@
 ## 1. Project Setup
 
-- [ ] 1.1 Add dependencies to `Cargo.toml`: `clap` (v4 with derive feature), `thiserror`
-- [ ] 1.2 Create module structure in `src/`: `cli.rs`, `auth.rs`, `error.rs`
-- [ ] 1.3 Update `main.rs` with basic module declarations
+- [x] 1.1 Add dependencies to `Cargo.toml`: `clap` (v4 with derive feature), `thiserror`
+- [x] 1.2 Create module structure in `src/`: `cli.rs`, `auth.rs`, `error.rs`
+- [x] 1.3 Update `main.rs` with basic module declarations
 
 ## 2. Error Types
 
-- [ ] 2.1 Define `Error` enum in `src/error.rs` with variants: `Authentication`, `InvalidArgs`, `Io`
-- [ ] 2.2 Implement `Display` trait for `Error` with descriptive messages
-- [ ] 2.3 Implement `std::error::Error` trait for `Error`
-- [ ] 2.4 Implement `From<std::io::Error>` for `Error` to wrap I/O errors
-- [ ] 2.5 Create type alias `type Result<T> = std::result::Result<T, Error>;`
+- [x] 2.1 Define `Error` enum in `src/error.rs` with variants: `Authentication`, `InvalidArgs`, `Io`
+- [x] 2.2 Implement `Display` trait for `Error` with descriptive messages
+- [x] 2.3 Implement `std::error::Error` trait for `Error`
+- [x] 2.4 Implement `From<std::io::Error>` for `Error` to wrap I/O errors
+- [x] 2.5 Create type alias `type Result<T> = std::result::Result<T, Error>;`
 
 ## 3. CLI Parsing Module
 
-- [ ] 3.1 Define `CliArgs` struct in `src/cli.rs` with fields: `owner`, `repo`, `number`, `output`
-- [ ] 3.2 Derive `Parser` trait from clap for `CliArgs`
-- [ ] 3.3 Add argument attributes: required flags, help text, default value for output
-- [ ] 3.4 Implement unit tests for valid argument parsing
-- [ ] 3.5 Implement unit tests for missing required arguments
-- [ ] 3.6 Implement unit tests for output path default value
+- [x] 3.1 Define `CliArgs` struct in `src/cli.rs` with fields: `owner`, `repo`, `number`, `output`
+- [x] 3.2 Derive `Parser` trait from clap for `CliArgs`
+- [x] 3.3 Add argument attributes: required flags, help text, default value for output
+- [x] 3.4 Implement unit tests for valid argument parsing
+- [x] 3.5 Implement unit tests for missing required arguments
+- [x] 3.6 Implement unit tests for output path default value
 
 ## 4. Authentication Module
 
