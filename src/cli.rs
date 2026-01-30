@@ -6,11 +6,11 @@ use clap::Parser;
 #[command(about = "Export GitHub Discussion to Markdown", version = "0.1.0")]
 pub struct CliArgs {
     /// GitHub repository owner
-    #[arg(long, required = true, help = "GitHub repository owner")]
+    #[arg(long, required = true, help = "GitHub repository owner", value_parser = validate_non_empty_string)]
     pub owner: String,
 
     /// GitHub repository name
-    #[arg(long, required = true, help = "GitHub repository name")]
+    #[arg(long, required = true, help = "GitHub repository name", value_parser = validate_non_empty_string)]
     pub repo: String,
 
     /// Discussion number
@@ -22,12 +22,22 @@ pub struct CliArgs {
     pub output: Option<String>,
 }
 
+/// Custom validator to reject empty strings
+fn validate_non_empty_string(s: &str) -> Result<String, String> {
+    if s.trim().is_empty() {
+        Err("Argument cannot be empty".to_string())
+    } else {
+        Ok(s.to_string())
+    }
+}
+
 impl CliArgs {
     /// Get the output file path, using default if not specified
     pub fn output_path(&self) -> String {
-        self.output
-            .clone()
-            .unwrap_or_else(|| format!("{}-discussion.md", self.number))
+        match &self.output {
+            Some(path) => path.clone(),
+            None => format!("{}-discussion.md", self.number),
+        }
     }
 }
 
@@ -120,6 +130,48 @@ mod tests {
             OsString::from("rust"),
             OsString::from("--number"),
             OsString::from("not-a-number"),
+        ];
+        assert!(CliArgs::try_parse_from(args).is_err());
+    }
+
+    #[test]
+    fn test_parse_empty_owner() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("--owner"),
+            OsString::from(""),
+            OsString::from("--repo"),
+            OsString::from("rust"),
+            OsString::from("--number"),
+            OsString::from("123"),
+        ];
+        assert!(CliArgs::try_parse_from(args).is_err());
+    }
+
+    #[test]
+    fn test_parse_whitespace_only_owner() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("--owner"),
+            OsString::from("   "),
+            OsString::from("--repo"),
+            OsString::from("rust"),
+            OsString::from("--number"),
+            OsString::from("123"),
+        ];
+        assert!(CliArgs::try_parse_from(args).is_err());
+    }
+
+    #[test]
+    fn test_parse_empty_repo() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("--owner"),
+            OsString::from("rust-lang"),
+            OsString::from("--repo"),
+            OsString::from(""),
+            OsString::from("--number"),
+            OsString::from("123"),
         ];
         assert!(CliArgs::try_parse_from(args).is_err());
     }

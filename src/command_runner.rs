@@ -12,7 +12,7 @@ use mockall::automock;
 /// This trait allows mocking command execution in tests, removing the need
 /// for fragile environment variable manipulation.
 #[cfg_attr(test, automock)]
-pub trait CommandRunner: Send + Sync {
+pub(crate) trait CommandRunner: Send + Sync {
     /// Runs a command with the given program and arguments.
     ///
     /// # Arguments
@@ -28,7 +28,7 @@ pub trait CommandRunner: Send + Sync {
 }
 
 /// Production implementation of `CommandRunner` using `std::process::Command`.
-pub struct StdCommandRunner;
+pub(crate) struct StdCommandRunner;
 
 impl CommandRunner for StdCommandRunner {
     fn run(&self, program: &str, args: &[String]) -> std::io::Result<std::process::Output> {

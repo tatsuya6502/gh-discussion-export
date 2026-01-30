@@ -24,20 +24,7 @@ use std::io::ErrorKind;
 /// Returns `Err(Error::GitHubCliNotFound)` if the GitHub CLI is not installed.
 /// Returns `Err(Error::Authentication)` if the user is not authenticated or
 /// the token is empty.
-///
-/// # Example
-///
-/// ```no_run
-/// use gh_discussion_export::auth::get_github_token;
-/// use gh_discussion_export::command_runner::StdCommandRunner;
-///
-/// let runner = StdCommandRunner;
-/// match get_github_token(&runner) {
-///     Ok(token) => println!("Got token: {}", token),
-///     Err(e) => eprintln!("Error: {}", e),
-/// }
-/// ```
-pub fn get_github_token(command_runner: &dyn CommandRunner) -> Result<String> {
+pub(crate) fn get_github_token(command_runner: &dyn CommandRunner) -> Result<String> {
     // Execute `gh auth token` command
     let args = vec!["auth".to_string(), "token".to_string()];
     let output = command_runner.run("gh", &args).map_err(|err| {
@@ -97,8 +84,8 @@ mod tests {
             .returning(|_, _| Ok(mock_success_output("ghp_test_token_123")));
 
         let result = get_github_token(&mock);
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "ghp_test_token_123");
+        let token = result.expect("Expected Ok(token), got Err");
+        assert_eq!(token, "ghp_test_token_123");
     }
 
     #[test]
