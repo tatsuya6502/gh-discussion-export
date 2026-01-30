@@ -2,9 +2,14 @@
 
 ### Requirement: Application error types
 The system SHALL define specific error types using `thiserror` for the following error conditions:
+- GitHub CLI not found errors
 - Authentication errors (failed to retrieve token)
 - CLI parsing errors (invalid arguments)
 - I/O errors (file read/write failures)
+
+#### Scenario: GitHub CLI not found
+- **WHEN** `gh` command is not available on the system
+- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from https://cli.github.com/
 
 #### Scenario: Authentication error
 - **WHEN** authentication fails

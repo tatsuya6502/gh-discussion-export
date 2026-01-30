@@ -1,5 +1,6 @@
 mod auth;
 mod cli;
+mod command_runner;
 mod error;
 
 use clap::Parser;
@@ -10,7 +11,7 @@ fn main() {
     let args = CliArgs::parse();
 
     // Stub for token retrieval - to be connected in integration change
-    // let _token = match auth::get_github_token() {
+    // let _token = match auth::get_github_token(&command_runner::StdCommandRunner) {
     //     Ok(token) => token,
     //     Err(e) => {
     //         eprintln!("Error: {}", e);
