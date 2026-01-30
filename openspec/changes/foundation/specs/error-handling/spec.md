@@ -9,7 +9,7 @@ The system SHALL define specific error types using `thiserror` for the following
 
 #### Scenario: GitHub CLI not found
 - **WHEN** `gh` command is not available on the system
-- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from https://cli.github.com/
+- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from <https://cli.github.com/>
 
 #### Scenario: Authentication error
 - **WHEN** authentication fails

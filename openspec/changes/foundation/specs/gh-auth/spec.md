@@ -9,7 +9,7 @@ The system SHALL retrieve an authentication token by calling the GitHub CLI comm
 
 #### Scenario: GitHub CLI not installed
 - **WHEN** `gh` command is not found on system
-- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from https://cli.github.com/
+- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from <https://cli.github.com/>
 
 #### Scenario: User not authenticated
 - **WHEN** `gh auth token` returns an error or non-zero exit code
