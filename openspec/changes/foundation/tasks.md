@@ -34,6 +34,6 @@
 
 ## 5. Main Module Skeleton
 
-- [ ] 5.1 Add basic `main()` function that declares `CliArgs` and parses arguments
-- [ ] 5.2 Add stub for token retrieval (to be connected in integration change)
-- [ ] 5.3 Ensure `cargo run -- --help` displays proper usage information
+- [x] 5.1 Add basic `main()` function that declares `CliArgs` and parses arguments
+- [x] 5.2 Add stub for token retrieval (to be connected in integration change)
+- [x] 5.3 Ensure `cargo run -- --help` displays proper usage information
