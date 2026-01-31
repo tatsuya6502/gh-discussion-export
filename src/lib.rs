@@ -5,5 +5,6 @@ pub mod error;
 
 // GraphQL client modules
 pub(crate) mod client;
+pub(crate) mod fetch;
 pub(crate) mod graphql;
 pub(crate) mod models;

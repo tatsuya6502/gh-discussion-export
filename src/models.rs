@@ -50,6 +50,7 @@ pub struct CommentReplies {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Discussion {
+    pub id: String,
     pub title: String,
     pub number: u64,
     pub url: String,
@@ -99,6 +100,7 @@ mod tests {
     #[test]
     fn test_discussion_deserialization() {
         let json_data = json!({
+            "id": "discussion_123",
             "title": "Test Discussion",
             "number": 123,
             "url": "https://github.com/test/repo/discussions/123",
@@ -124,6 +126,7 @@ mod tests {
         });
 
         let discussion: Discussion = serde_json::from_value(json_data).unwrap();
+        assert_eq!(discussion.id, "discussion_123");
         assert_eq!(discussion.title, "Test Discussion");
         assert_eq!(discussion.number, 123);
         assert_eq!(
@@ -232,6 +235,7 @@ mod tests {
     #[test]
     fn test_discussion_with_null_author() {
         let json_data = json!({
+            "id": "discussion_1",
             "title": "Test",
             "number": 1,
             "url": "https://github.com/test/repo/discussions/1",

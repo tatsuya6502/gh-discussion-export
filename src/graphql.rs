@@ -1,6 +1,7 @@
 /// GraphQL query to fetch a discussion with comments and replies
 ///
 /// This query fetches:
+/// - Discussion ID (node ID for pagination queries)
 /// - Discussion metadata (title, number, URL, created at, body, author)
 /// - All comments with databaseId, author, createdAt, body
 /// - All replies to comments with databaseId, author, createdAt, body
@@ -9,6 +10,7 @@ pub const DISCUSSION_QUERY: &str = r#"
 query ($owner: String!, $repo: String!, $number: Int!) {
     repository(owner: $owner, name: $repo) {
         discussion(number: $number) {
+            id
             title
             number
             url
@@ -41,6 +43,79 @@ query ($owner: String!, $repo: String!, $number: Int!) {
                             endCursor
                         }
                     }
+                }
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+            }
+        }
+    }
+}
+"#;
+
+/// GraphQL query to fetch comments for a discussion with pagination
+///
+/// This query fetches:
+/// - Comment nodes with id, databaseId, author, createdAt, body
+/// - Replies connection with pageInfo (for determining if replies need pagination)
+/// - PageInfo for comment pagination
+///
+/// Variables:
+/// - $id: ID! - The discussion node ID
+/// - $after: String - Cursor for pagination (null for first page)
+pub const COMMENTS_QUERY: &str = r#"
+query ($id: ID!, $after: String) {
+    node(id: $id) {
+        ... on Discussion {
+            comments(first: 100, after: $after) {
+                nodes {
+                    id
+                    databaseId
+                    author {
+                        login
+                    }
+                    createdAt
+                    body
+                    replies {
+                        pageInfo {
+                            hasNextPage
+                            endCursor
+                        }
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+            }
+        }
+    }
+}
+"#;
+
+/// GraphQL query to fetch replies for a comment with pagination
+///
+/// This query fetches:
+/// - Reply nodes with id, databaseId, author, createdAt, body
+/// - PageInfo for reply pagination
+///
+/// Variables:
+/// - $id: ID! - The comment node ID
+/// - $after: String - Cursor for pagination (null for first page)
+pub const REPLIES_QUERY: &str = r#"
+query ($id: ID!, $after: String) {
+    node(id: $id) {
+        ... on Comment {
+            replies(first: 100, after: $after) {
+                nodes {
+                    id
+                    databaseId
+                    author {
+                        login
+                    }
+                    createdAt
+                    body
                 }
                 pageInfo {
                     hasNextPage
