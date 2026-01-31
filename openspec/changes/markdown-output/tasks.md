@@ -1,7 +1,7 @@
 ## 1. Module Setup
 
 - [ ] 1.1 Create `src/output.rs` module
-- [ ] 1.2 Update `src/main.rs` to declare `output` module
+- [ ] 1.2 Update `src/lib.rs` to declare `output` module with `pub(crate)` visibility
 
 ## 2. Header Generation
 

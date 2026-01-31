@@ -56,6 +56,29 @@ Define GraphQL-specific error type that wraps HTTP errors and parse errors.
 
 **Rationale:** GraphQL errors come in two forms: HTTP-level errors (401, 429, etc.) and GraphQL errors within a 200 response (validation errors, syntax errors). Both need to be surfaced clearly to users.
 
+### Test Mocking Strategy: Dependency Injection with `mockall`
+Use a thin `HttpClient` trait abstraction over `reqwest::blocking::Client` to enable mocking in tests without starting a local HTTP server.
+
+**Rationale:** The traditional approach of using HTTP server mocking libraries like `mockito` requires:
+- Starting a local server with port allocation
+- Actual HTTP requests even in unit tests
+- Network overhead and slower test execution
+
+By using `mockall` with a dependency injection pattern (consistent with the foundation change):
+- Tests run faster without network I/O
+- Mock behavior is explicit and clear in test code
+- Better error messages from mock expectations
+- Reuses the pattern already established for `CommandRunner`
+
+**Implementation:**
+- `HttpClient` trait with `post(&self, url: &str, body: &str) -> Result<String, Error>` method
+- `ReqwestClient` production implementation wrapping `reqwest::blocking::Client`
+- `#[cfg_attr(test, automock)]` generates `MockHttpClient` in tests
+- `GitHubClient` accepts `Box<dyn HttpClient>` via dependency injection
+- Tests inject `MockHttpClient` with `.expect()` and `.returning()`
+
+**Alternative considered:** HTTP server mocking with `mockito` - Rejected because it adds network overhead and is inconsistent with the foundation change's `mockall` pattern.
+
 ## Risks / Trade-offs
 
 | Risk | Mitigation |

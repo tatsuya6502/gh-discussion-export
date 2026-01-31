@@ -18,6 +18,26 @@ pub enum Error {
     /// I/O error
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
+
+    /// HTTP request error
+    #[error("HTTP request failed: {0}")]
+    Http(String),
+
+    /// GraphQL error response
+    #[error("GraphQL error: {0}")]
+    GraphQL(String),
+
+    /// JSON parsing error
+    #[error("Failed to parse response: {0}")]
+    JsonParse(String),
+
+    /// Rate limit exceeded
+    #[error("GitHub API rate limit exceeded. Please wait before trying again.")]
+    RateLimit,
+
+    /// Permission denied
+    #[error("Permission denied: {0}")]
+    PermissionDenied(String),
 }
 
 /// Convenient Result type alias for application errors
@@ -79,5 +99,44 @@ mod tests {
             Err(Error::Authentication)
         }
         assert!(test_function().is_err());
+    }
+
+    #[test]
+    fn test_error_http_display() {
+        let err = Error::Http("Connection failed".to_string());
+        assert_eq!(err.to_string(), "HTTP request failed: Connection failed");
+    }
+
+    #[test]
+    fn test_error_graphql_display() {
+        let err = Error::GraphQL("Syntax error".to_string());
+        assert_eq!(err.to_string(), "GraphQL error: Syntax error");
+    }
+
+    #[test]
+    fn test_error_json_parse_display() {
+        let err = Error::JsonParse("Unexpected token".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Failed to parse response: Unexpected token"
+        );
+    }
+
+    #[test]
+    fn test_error_rate_limit_display() {
+        let err = Error::RateLimit;
+        assert_eq!(
+            err.to_string(),
+            "GitHub API rate limit exceeded. Please wait before trying again."
+        );
+    }
+
+    #[test]
+    fn test_error_permission_denied_display() {
+        let err = Error::PermissionDenied("Access to resource denied".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Permission denied: Access to resource denied"
+        );
     }
 }

@@ -1,7 +1,7 @@
 ## 1. Module Setup
 
 - [ ] 1.1 Create `src/fetch.rs` module
-- [ ] 1.2 Update `src/main.rs` to declare `fetch` module
+- [ ] 1.2 Update `src/lib.rs` to declare `fetch` module with `pub(crate)` visibility
 
 ## 2. Comment Pagination
 

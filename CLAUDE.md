@@ -111,3 +111,28 @@ This tool is designed as the **first stage** of a multi-step specification workf
 3. Review and refine generated specifications
 
 The output is meant to be a **primary source document** - interpretation is explicitly deferred to downstream tools.
+
+## Development Workflow
+
+After making any code changes, run the following commands to verify the changes:
+
+```bash
+# 1. Check compilation
+cargo check
+
+# 2. Run linter
+cargo clippy --lib --tests --all-features --all-targets
+
+# 3. Format code
+cargo fmt --all
+
+# 4. Run tests
+cargo test
+```
+
+All commands must pass before committing changes. This ensures:
+- Code compiles without errors
+- No clippy warnings (except expected dead_code warnings for modules not yet integrated)
+- Code is properly formatted
+- All tests pass
+
