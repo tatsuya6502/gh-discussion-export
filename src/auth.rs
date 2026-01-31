@@ -106,14 +106,12 @@ mod tests {
     #[test]
     fn test_get_github_token_not_found() {
         let mut mock = MockCommandRunner::new();
-        mock.expect_run()
-            .times(1)
-            .returning(|_, _| {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "gh not found",
-                ))
-            });
+        mock.expect_run().times(1).returning(|_, _| {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "gh not found",
+            ))
+        });
 
         let result = get_github_token(&mock);
         assert!(matches!(result, Err(Error::GitHubCliNotFound)));
