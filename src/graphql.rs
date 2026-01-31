@@ -1,7 +1,7 @@
 /// GraphQL query to fetch a discussion with comments and replies
 ///
 /// This query fetches:
-/// - Discussion metadata (title, number, URL, created at, body)
+/// - Discussion metadata (title, number, URL, created at, body, author)
 /// - All comments with databaseId, author, createdAt, body
 /// - All replies to comments with databaseId, author, createdAt, body
 /// - Pagination cursors (hasNextPage, endCursor) for both comments and replies
@@ -14,6 +14,9 @@ query ($owner: String!, $repo: String!, $number: Int!) {
             url
             createdAt
             body
+            author {
+                login
+            }
             comments(first: 100) {
                 nodes {
                     id
@@ -60,6 +63,7 @@ mod tests {
         assert!(DISCUSSION_QUERY.contains("url"));
         assert!(DISCUSSION_QUERY.contains("createdAt"));
         assert!(DISCUSSION_QUERY.contains("body"));
+        assert!(DISCUSSION_QUERY.contains("author"));
     }
 
     #[test]

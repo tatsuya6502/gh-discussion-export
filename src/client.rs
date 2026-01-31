@@ -25,6 +25,7 @@ impl ReqwestClient {
     pub fn new(token: String) -> Result<Self> {
         let client = reqwest::blocking::Client::builder()
             .user_agent("gh-discussion-export")
+            .connect_timeout(std::time::Duration::from_secs(60))
             .build()
             .map_err(|e| Error::Http(format!("Failed to create HTTP client: {}", e)))?;
 
@@ -166,6 +167,9 @@ mod tests {
                 .unwrap()
                 .with_timezone(&Utc),
             body: "Test body".to_string(),
+            author: Some(Author {
+                login: Some("testuser".to_string()),
+            }),
             comments: DiscussionComments {
                 nodes: Some(vec![Some(Comment {
                     id: "1".to_string(),
@@ -219,6 +223,7 @@ mod tests {
                             "url": "https://github.com/test/repo/discussions/1",
                             "createdAt": "2024-01-01T00:00:00Z",
                             "body": "Test body",
+                            "author": {"login": "testuser"},
                             "comments": {
                                 "nodes": [
                                     {

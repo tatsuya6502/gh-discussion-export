@@ -55,6 +55,7 @@ pub struct Discussion {
     pub url: String,
     pub created_at: DateTime<Utc>,
     pub body: String,
+    pub author: Option<Author>,
     pub comments: DiscussionComments,
 }
 
@@ -101,6 +102,7 @@ mod tests {
             "url": "https://github.com/test/repo/discussions/123",
             "createdAt": "2024-01-15T10:30:00Z",
             "body": "This is a test discussion",
+            "author": {"login": "testuser"},
             "comments": {
                 "nodes": [
                     {
@@ -127,6 +129,8 @@ mod tests {
             "https://github.com/test/repo/discussions/123"
         );
         assert_eq!(discussion.body, "This is a test discussion");
+        assert!(discussion.author.is_some());
+        assert_eq!(discussion.author.unwrap().login, Some("testuser".to_string()));
         assert!(discussion.comments.nodes.is_some());
     }
 
@@ -228,6 +232,7 @@ mod tests {
             "url": "https://github.com/test/repo/discussions/1",
             "createdAt": "2024-01-15T10:30:00Z",
             "body": "Test body",
+            "author": null,  // Deleted discussion author
             "comments": {
                 "nodes": [
                     {
@@ -247,7 +252,8 @@ mod tests {
         });
 
         let discussion: Discussion = serde_json::from_value(json_data).unwrap();
+        assert!(discussion.author.is_none());  // Discussion author is null
         let comments = discussion.comments.nodes.unwrap();
-        assert!(comments[0].as_ref().unwrap().author.is_none());
+        assert!(comments[0].as_ref().unwrap().author.is_none());  // Comment author is null
     }
 }
