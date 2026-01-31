@@ -107,6 +107,44 @@ The project is organized into 7 modular changes (OpenSpec-driven):
 6. **e2e-tests** - Integration tests against real GitHub API
 7. **documentation** - README and contribution guidelines
 
+### Implementation Progress
+
+- [x] 1. **foundation** (25 tasks)
+  - CLI argument parsing with clap
+  - GitHub CLI authentication
+  - Error types with thiserror
+  - Project structure setup
+- [ ] 2. **graphql-client** (34 tasks)
+  - reqwest HTTP client setup
+  - GraphQL query definitions
+  - serde response models
+  - API error handling
+- [ ] 3. **discussion-fetch** (35 tasks)
+  - Discussion metadata fetching
+  - Cursor-based pagination for comments
+  - Cursor-based pagination for replies
+  - Chronological sorting
+  - Deleted user handling
+- [ ] 4. **markdown-output** (44 tasks)
+  - Header generation with metadata
+  - Original post formatting (##)
+  - Comment formatting (###)
+  - Reply formatting (####)
+  - File writing (UTF-8, LF)
+- [ ] 5. **integration** (32 tasks)
+  - Wire all modules in main.rs
+  - Complete workflow pipeline
+  - Error handling and messaging
+- [ ] 6. **e2e-tests** (53 tasks)
+  - Integration tests with real GitHub API
+  - Pagination tests
+  - Edge case tests (deleted users, large discussions)
+  - Output format validation
+- [ ] 7. **documentation** (48 tasks)
+  - README.md with installation and usage
+  - Contribution guidelines
+  - License information
+
 ## Development
 
 ```bash
