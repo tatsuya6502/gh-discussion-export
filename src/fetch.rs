@@ -315,9 +315,11 @@ fn parse_comments_response(response: Value) -> Result<CommentsResponse> {
         ));
     }
 
-    let comments = node
-        .get("comments")
-        .ok_or_else(|| Error::JsonParse("Response missing 'comments' field".to_string()))?;
+    let comments = node.get("comments").ok_or_else(|| {
+        Error::JsonParse(
+            "Response missing 'comments' field - the node ID may not be a Discussion".to_string(),
+        )
+    })?;
 
     // Parse nodes
     let nodes: Option<Vec<Option<Comment>>> = match comments.get("nodes") {
@@ -400,6 +402,7 @@ mod tests {
                                 "createdAt": "2024-01-01T00:00:00Z",
                                 "body": "Test comment 1",
                                 "replies": {
+                                    "nodes": [],
                                     "pageInfo": {"hasNextPage": false, "endCursor": null}
                                 }
                             }
@@ -421,6 +424,17 @@ mod tests {
         assert_eq!(nodes.len(), 1);
         assert!(nodes[0].is_some());
         assert_eq!(nodes[0].as_ref().unwrap().body, "Test comment 1");
+        // Verify replies nodes is empty (no replies on this comment)
+        assert!(
+            nodes[0]
+                .as_ref()
+                .unwrap()
+                .replies
+                .nodes
+                .as_ref()
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[test]
@@ -437,6 +451,7 @@ mod tests {
                                 "createdAt": "2024-01-01T00:00:00Z",
                                 "body": "Test comment 1",
                                 "replies": {
+                                    "nodes": [],
                                     "pageInfo": {"hasNextPage": false, "endCursor": null}
                                 }
                             },
@@ -448,6 +463,7 @@ mod tests {
                                 "createdAt": "2024-01-01T01:00:00Z",
                                 "body": "Test comment 2",
                                 "replies": {
+                                    "nodes": [],
                                     "pageInfo": {"hasNextPage": false, "endCursor": null}
                                 }
                             }
