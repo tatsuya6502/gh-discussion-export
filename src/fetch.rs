@@ -296,6 +296,13 @@ fn parse_comments_response(response: Value) -> Result<CommentsResponse> {
         .get("node")
         .ok_or_else(|| Error::JsonParse("Response missing 'node' field".to_string()))?;
 
+    // Check if node is null (ID didn't match the Discussion type)
+    if node.is_null() {
+        return Err(Error::JsonParse(
+            "Node is null - the ID may not be a valid Discussion".to_string(),
+        ));
+    }
+
     let comments = node
         .get("comments")
         .ok_or_else(|| Error::JsonParse("Response missing 'comments' field".to_string()))?;
@@ -330,6 +337,13 @@ fn parse_replies_response(response: Value) -> Result<RepliesResponse> {
     let node = data
         .get("node")
         .ok_or_else(|| Error::JsonParse("Response missing 'node' field".to_string()))?;
+
+    // Check if node is null (ID didn't match the DiscussionComment type)
+    if node.is_null() {
+        return Err(Error::JsonParse(
+            "Node is null - the ID may not be a valid DiscussionComment".to_string(),
+        ));
+    }
 
     let replies = node
         .get("replies")
