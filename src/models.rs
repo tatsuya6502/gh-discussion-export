@@ -82,11 +82,13 @@ pub struct ErrorResponse {
 }
 
 /// GraphQL response wrapper
+///
+/// GraphQL can return both data and errors in the same response (partial success).
+/// Using optional fields ensures we capture both when present.
 #[derive(Debug, Deserialize, Clone, PartialEq)]
-#[serde(untagged)]
-pub enum GraphQLResponse {
-    Success { data: serde_json::Value },
-    Error { errors: Vec<GraphQLError> },
+pub struct GraphQLResponse {
+    pub data: Option<serde_json::Value>,
+    pub errors: Option<Vec<GraphQLError>>,
 }
 
 #[cfg(test)]
@@ -130,7 +132,10 @@ mod tests {
         );
         assert_eq!(discussion.body, "This is a test discussion");
         assert!(discussion.author.is_some());
-        assert_eq!(discussion.author.unwrap().login, Some("testuser".to_string()));
+        assert_eq!(
+            discussion.author.unwrap().login,
+            Some("testuser".to_string())
+        );
         assert!(discussion.comments.nodes.is_some());
     }
 
@@ -252,8 +257,8 @@ mod tests {
         });
 
         let discussion: Discussion = serde_json::from_value(json_data).unwrap();
-        assert!(discussion.author.is_none());  // Discussion author is null
+        assert!(discussion.author.is_none()); // Discussion author is null
         let comments = discussion.comments.nodes.unwrap();
-        assert!(comments[0].as_ref().unwrap().author.is_none());  // Comment author is null
+        assert!(comments[0].as_ref().unwrap().author.is_none()); // Comment author is null
     }
 }

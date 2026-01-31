@@ -120,7 +120,8 @@ impl GitHubClient {
 
         // Check for GraphQL errors
         if let Some(errors) = response.get("errors").and_then(|e| e.as_array())
-            && !errors.is_empty() {
+            && !errors.is_empty()
+        {
             let error_messages: Vec<String> = errors
                 .iter()
                 .filter_map(|e| e.get("message").and_then(|m| m.as_str()))
@@ -136,11 +137,13 @@ impl GitHubClient {
 
         let repository = data
             .get("repository")
-            .ok_or_else(|| Error::JsonParse("Response missing 'repository' field".to_string()))?;
+            .filter(|v| !v.is_null())
+            .ok_or_else(|| Error::JsonParse("Repository not found".to_string()))?;
 
         let discussion_value = repository
             .get("discussion")
-            .ok_or_else(|| Error::JsonParse("Response missing 'discussion' field".to_string()))?;
+            .filter(|v| !v.is_null())
+            .ok_or_else(|| Error::JsonParse("Discussion not found".to_string()))?;
 
         // Parse the Discussion object
         let discussion: Discussion = serde_json::from_value(discussion_value.clone())
@@ -153,49 +156,6 @@ impl GitHubClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{
-        Author, Comment, CommentReplies, Discussion, DiscussionComments, PageInfo,
-    };
-    use chrono::{DateTime, Utc};
-
-    fn create_mock_discussion() -> Discussion {
-        Discussion {
-            title: "Test Discussion".to_string(),
-            number: 1,
-            url: "https://github.com/test/repo/discussions/1".to_string(),
-            created_at: DateTime::parse_from_rfc3339("2024-01-01T00:00:00Z")
-                .unwrap()
-                .with_timezone(&Utc),
-            body: "Test body".to_string(),
-            author: Some(Author {
-                login: Some("testuser".to_string()),
-            }),
-            comments: DiscussionComments {
-                nodes: Some(vec![Some(Comment {
-                    id: "1".to_string(),
-                    database_id: 1,
-                    author: Some(Author {
-                        login: Some("testuser".to_string()),
-                    }),
-                    created_at: DateTime::parse_from_rfc3339("2024-01-01T00:00:00Z")
-                        .unwrap()
-                        .with_timezone(&Utc),
-                    body: "Test comment".to_string(),
-                    replies: CommentReplies {
-                        nodes: Some(vec![]),
-                        page_info: PageInfo {
-                            has_next_page: false,
-                            end_cursor: None,
-                        },
-                    },
-                })]),
-                page_info: PageInfo {
-                    has_next_page: false,
-                    end_cursor: None,
-                },
-            },
-        }
-    }
 
     #[test]
     fn test_reqwest_client_creation() {
@@ -345,7 +305,30 @@ mod tests {
         let result = client.execute_query("query {}", serde_json::json!({}));
         assert!(result.is_err());
         match result {
-            Err(Error::JsonParse(msg)) => assert!(msg.contains("repository")),
+            Err(Error::JsonParse(msg)) => assert!(msg.to_lowercase().contains("repository")),
+            _ => panic!("Expected JsonParse error"),
+        }
+    }
+
+    #[test]
+    fn test_null_discussion_field() {
+        let mut mock_http = MockHttpClient::new();
+        mock_http.expect_post().times(1).returning(|_url, _body| {
+            Ok(serde_json::json!({
+                "data": {
+                    "repository": {
+                        "discussion": null
+                    }
+                }
+            })
+            .to_string())
+        });
+
+        let client = GitHubClient::new(Box::new(mock_http));
+        let result = client.execute_query("query {}", serde_json::json!({}));
+        assert!(result.is_err());
+        match result {
+            Err(Error::JsonParse(msg)) => assert!(msg.to_lowercase().contains("discussion")),
             _ => panic!("Expected JsonParse error"),
         }
     }
