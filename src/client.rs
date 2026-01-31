@@ -45,6 +45,17 @@ impl HttpClient for ReqwestClient {
             .map_err(|e| Error::Http(format!("Request failed: {}", e)))?;
 
         let status = response.status();
+
+        // Try to extract rate limit information from headers before consuming response
+        let is_rate_limit = status.as_u16() == 429
+            || (status.as_u16() == 403
+                && response
+                    .headers()
+                    .get("X-RateLimit-Remaining")
+                    .and_then(|v| v.to_str().ok())
+                    .map(|v| v == "0")
+                    .unwrap_or(false));
+
         let response_text = response
             .text()
             .map_err(|e| Error::Http(format!("Failed to read response: {}", e)))?;
@@ -52,8 +63,13 @@ impl HttpClient for ReqwestClient {
         // Handle HTTP error status codes
         if status.as_u16() == 401 {
             return Err(Error::Authentication);
-        } else if status.as_u16() == 403 || status.as_u16() == 429 {
+        } else if is_rate_limit {
             return Err(Error::RateLimit);
+        } else if status.as_u16() == 403 {
+            return Err(Error::PermissionDenied(format!(
+                "Access denied: {}",
+                response_text
+            )));
         } else if !status.is_success() {
             return Err(Error::Http(format!(
                 "HTTP error {}: {}",
@@ -326,6 +342,23 @@ mod tests {
         match result {
             Err(Error::JsonParse(msg)) => assert!(msg.contains("repository")),
             _ => panic!("Expected JsonParse error"),
+        }
+    }
+
+    #[test]
+    fn test_http_403_permission_denied_error() {
+        let mut mock_http = MockHttpClient::new();
+        mock_http
+            .expect_post()
+            .times(1)
+            .returning(|_url, _body| Err(Error::PermissionDenied("Access denied".to_string())));
+
+        let client = GitHubClient::new(Box::new(mock_http));
+        let result = client.execute_query("query {}", serde_json::json!({}));
+        assert!(result.is_err());
+        match result {
+            Err(Error::PermissionDenied(msg)) => assert!(msg.contains("Access denied")),
+            _ => panic!("Expected PermissionDenied error"),
         }
     }
 }

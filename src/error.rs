@@ -34,6 +34,10 @@ pub enum Error {
     /// Rate limit exceeded
     #[error("GitHub API rate limit exceeded. Please wait before trying again.")]
     RateLimit,
+
+    /// Permission denied
+    #[error("Permission denied: {0}")]
+    PermissionDenied(String),
 }
 
 /// Convenient Result type alias for application errors
@@ -124,6 +128,15 @@ mod tests {
         assert_eq!(
             err.to_string(),
             "GitHub API rate limit exceeded. Please wait before trying again."
+        );
+    }
+
+    #[test]
+    fn test_error_permission_denied_display() {
+        let err = Error::PermissionDenied("Access to resource denied".to_string());
+        assert_eq!(
+            err.to_string(),
+            "Permission denied: Access to resource denied"
         );
     }
 }
