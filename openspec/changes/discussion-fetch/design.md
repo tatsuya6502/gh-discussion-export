@@ -50,6 +50,18 @@ Fail immediately on any pagination error (don't attempt partial results).
 
 **Rationale:** Per `specs/discussion-fetching/spec.md` "Propagate pagination errors" requirement, pagination failure is a hard error. Attempting to return partial data would violate the "lossless" requirement. The user should see a clear error and retry.
 
+### Reply Fetching Optimization
+Fetch the first page of reply nodes in `COMMENTS_QUERY` to avoid unnecessary API calls for comments without replies.
+
+**Rationale:** `fetch_discussion` calls `fetch_all_replies` for every comment. Without optimization, this results in N API calls for N comments, even if only M comments have replies (where M << N). By fetching the first page of reply nodes (100 items) in the initial `COMMENTS_QUERY`, we can:
+1. Check if `comment.replies.nodes` has any data OR `comment.replies.page_info.has_next_page` is true
+2. Only call `fetch_all_replies` if replies actually exist
+3. Skip the API call for comments with zero replies
+
+This reduces API calls from N (all comments) to M (comments with replies). For a discussion with 50 comments where only 5 have replies, this reduces API calls from 50 to 5.
+
+**Trade-off:** Slightly larger initial query responses, but significant reduction in total API calls for discussions with many reply-less comments.
+
 ## Risks / Trade-offs
 
 | Risk | Mitigation |

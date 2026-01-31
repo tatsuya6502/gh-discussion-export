@@ -28,7 +28,8 @@ query ($owner: String!, $repo: String!, $number: Int!) {
 ///
 /// This query fetches:
 /// - Comment nodes with id, databaseId, author, createdAt, body
-/// - Replies connection with pageInfo (for determining if replies need pagination)
+/// - First page of reply nodes (to avoid unnecessary API calls for comments without replies)
+/// - Replies pageInfo (for determining if additional pagination is needed)
 /// - PageInfo for comment pagination
 ///
 /// Variables:
@@ -48,6 +49,15 @@ query ($id: ID!, $after: String) {
                     createdAt
                     body
                     replies(first: 100) {
+                        nodes {
+                            id
+                            databaseId
+                            author {
+                                login
+                            }
+                            createdAt
+                            body
+                        }
                         pageInfo {
                             hasNextPage
                             endCursor

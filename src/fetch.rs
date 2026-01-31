@@ -59,22 +59,34 @@ pub(crate) fn fetch_discussion(
     // Step 3: Fetch all comments using pagination (task 4.4)
     let mut comments = fetch_all_comments(client, &discussion_id)?;
 
-    // Step 4: For each comment, fetch all replies (task 4.5)
+    // Step 4: For each comment, fetch all replies if needed (task 4.5)
+    // Optimization: COMMENTS_QUERY now fetches the first page of reply nodes.
+    // We only call fetch_all_replies if there are actual replies to fetch.
     for comment in &mut comments {
-        let comment_id = comment.id.clone();
-        let replies = fetch_all_replies(client, &comment_id)?;
+        let has_replies = comment
+            .replies
+            .nodes
+            .as_ref()
+            .map_or(false, |nodes| nodes.iter().any(|r| r.is_some()))
+            || comment.replies.page_info.has_next_page;
 
-        // Update the comment's replies with the fetched ones
-        comment.replies.nodes = if replies.is_empty() {
-            None
-        } else {
-            Some(replies.into_iter().map(Some).collect())
-        };
-        // Reset page_info to indicate no more pages since we've fetched all replies
-        comment.replies.page_info = crate::models::PageInfo {
-            has_next_page: false,
-            end_cursor: None,
-        };
+        if has_replies {
+            let comment_id = comment.id.clone();
+            let replies = fetch_all_replies(client, &comment_id)?;
+
+            // Update the comment's replies with the fetched ones
+            comment.replies.nodes = if replies.is_empty() {
+                None
+            } else {
+                Some(replies.into_iter().map(Some).collect())
+            };
+            // Reset page_info to indicate no more pages since we've fetched all replies
+            comment.replies.page_info = crate::models::PageInfo {
+                has_next_page: false,
+                end_cursor: None,
+            };
+        }
+        // If no replies, the initial fetch already set nodes to None and page_info correctly
     }
 
     // Step 5: Replace null authors with `<deleted>` placeholder (task 4.6)
