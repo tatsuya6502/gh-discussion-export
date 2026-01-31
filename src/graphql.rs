@@ -106,7 +106,7 @@ query ($id: ID!, $after: String) {
 pub const REPLIES_QUERY: &str = r#"
 query ($id: ID!, $after: String) {
     node(id: $id) {
-        ... on Comment {
+        ... on DiscussionComment {
             replies(first: 100, after: $after) {
                 nodes {
                     id

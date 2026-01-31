@@ -140,8 +140,6 @@ fn replace_deleted_authors(discussion: &mut Discussion, comments: &mut [Comment]
 }
 
 /// Fetch all comments for a discussion using cursor-based pagination
-
-/// Fetch all comments for a discussion using cursor-based pagination
 ///
 /// # Arguments
 /// * `client` - The GitHubClient to use for queries
@@ -267,9 +265,13 @@ fn parse_comments_response(response: Value) -> Result<CommentsResponse> {
         .ok_or_else(|| Error::JsonParse("Response missing 'comments' field".to_string()))?;
 
     // Parse nodes
-    let nodes: Option<Vec<Option<Comment>>> = comments
-        .get("nodes")
-        .and_then(|v| serde_json::from_value(v.clone()).ok());
+    let nodes: Option<Vec<Option<Comment>>> = match comments.get("nodes") {
+        Some(v) => Some(
+            serde_json::from_value(v.clone())
+                .map_err(|e| Error::JsonParse(format!("Failed to parse comment nodes: {}", e)))?,
+        ),
+        None => None,
+    };
 
     // Parse pageInfo
     let page_info_value = comments
@@ -298,9 +300,13 @@ fn parse_replies_response(response: Value) -> Result<RepliesResponse> {
         .ok_or_else(|| Error::JsonParse("Response missing 'replies' field".to_string()))?;
 
     // Parse nodes
-    let nodes: Option<Vec<Option<Reply>>> = replies
-        .get("nodes")
-        .and_then(|v| serde_json::from_value(v.clone()).ok());
+    let nodes: Option<Vec<Option<Reply>>> = match replies.get("nodes") {
+        Some(v) => Some(
+            serde_json::from_value(v.clone())
+                .map_err(|e| Error::JsonParse(format!("Failed to parse reply nodes: {}", e)))?,
+        ),
+        None => None,
+    };
 
     // Parse pageInfo
     let page_info_value = replies
@@ -716,7 +722,7 @@ mod tests {
     // Task 5.5: Add test for deleted author handling
     #[test]
     fn test_deleted_author_handling() {
-        use crate::models::{Author, Comment, Discussion};
+        use crate::models::{Comment, Discussion};
         use chrono::{DateTime, Utc};
 
         // Create a discussion with null author
