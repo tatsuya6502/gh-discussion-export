@@ -56,12 +56,27 @@ pub(crate) fn get_github_token(command_runner: &dyn CommandRunner) -> Result<Str
 mod tests {
     use super::*;
     use crate::command_runner::MockCommandRunner;
+    #[cfg(unix)]
     use std::os::unix::process::ExitStatusExt;
+    #[cfg(windows)]
+    use std::os::windows::process::ExitStatusExt;
+
+    /// Helper to create exit status for testing (cross-platform)
+    fn exit_status(code: i32) -> std::process::ExitStatus {
+        #[cfg(unix)]
+        {
+            ExitStatusExt::from_raw(code << 8)
+        }
+        #[cfg(windows)]
+        {
+            ExitStatusExt::from_raw(code as u32)
+        }
+    }
 
     /// Helper to create a successful output with stdout content
     fn mock_success_output(stdout: &str) -> std::process::Output {
         std::process::Output {
-            status: ExitStatusExt::from_raw(0),
+            status: exit_status(0),
             stdout: stdout.as_bytes().to_vec(),
             stderr: Vec::new(),
         }
@@ -70,7 +85,7 @@ mod tests {
     /// Helper to create a failed output (non-zero exit code)
     fn mock_failure_output() -> std::process::Output {
         std::process::Output {
-            status: ExitStatusExt::from_raw(256), // exit code 1
+            status: exit_status(1),
             stdout: Vec::new(),
             stderr: Vec::new(),
         }

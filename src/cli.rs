@@ -14,7 +14,7 @@ pub struct CliArgs {
     pub repo: String,
 
     /// Discussion number
-    #[arg(long, required = true, help = "Discussion number")]
+    #[arg(long, required = true, help = "Discussion number", value_parser = validate_positive_number)]
     pub number: u64,
 
     /// Output file path (default: <number>-discussion.md)
@@ -28,6 +28,14 @@ fn validate_non_empty_string(s: &str) -> Result<String, String> {
         Err("Argument cannot be empty".to_string())
     } else {
         Ok(s.to_string())
+    }
+}
+
+/// Custom validator to ensure discussion number is positive (>= 1)
+fn validate_positive_number(s: &str) -> Result<u64, String> {
+    match s.parse::<u64>() {
+        Ok(num) if num > 0 => Ok(num),
+        _ => Err("Discussion number must be greater than zero.".to_string()),
     }
 }
 
@@ -130,6 +138,20 @@ mod tests {
             OsString::from("rust"),
             OsString::from("--number"),
             OsString::from("not-a-number"),
+        ];
+        assert!(CliArgs::try_parse_from(args).is_err());
+    }
+
+    #[test]
+    fn test_parse_zero_number() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("--owner"),
+            OsString::from("rust-lang"),
+            OsString::from("--repo"),
+            OsString::from("rust"),
+            OsString::from("--number"),
+            OsString::from("0"),
         ];
         assert!(CliArgs::try_parse_from(args).is_err());
     }
