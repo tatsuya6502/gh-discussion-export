@@ -1,10 +1,5 @@
-mod auth;
-mod cli;
-mod command_runner;
-mod error;
-
 use clap::Parser;
-use cli::CliArgs;
+use gh_discussion_export::cli::CliArgs;
 
 fn main() {
     // Parse command-line arguments
