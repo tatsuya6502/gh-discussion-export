@@ -1,14 +1,16 @@
-/// GraphQL query to fetch a discussion with comments and replies
+/// GraphQL query to fetch discussion metadata
 ///
-/// This query fetches:
+/// This query fetches only discussion metadata:
+/// - Discussion ID (node ID for pagination queries)
 /// - Discussion metadata (title, number, URL, created at, body, author)
-/// - All comments with databaseId, author, createdAt, body
-/// - All replies to comments with databaseId, author, createdAt, body
-/// - Pagination cursors (hasNextPage, endCursor) for both comments and replies
+///
+/// Note: Comments and replies are fetched separately using pagination queries
+/// (COMMENTS_QUERY and REPLIES_QUERY) to ensure complete data retrieval.
 pub const DISCUSSION_QUERY: &str = r#"
 query ($owner: String!, $repo: String!, $number: Int!) {
     repository(owner: $owner, name: $repo) {
         discussion(number: $number) {
+            id
             title
             number
             url
@@ -17,7 +19,27 @@ query ($owner: String!, $repo: String!, $number: Int!) {
             author {
                 login
             }
-            comments(first: 100) {
+        }
+    }
+}
+"#;
+
+/// GraphQL query to fetch comments for a discussion with pagination
+///
+/// This query fetches:
+/// - Comment nodes with id, databaseId, author, createdAt, body
+/// - First page of reply nodes (to avoid unnecessary API calls for comments without replies)
+/// - Replies pageInfo (for determining if additional pagination is needed)
+/// - PageInfo for comment pagination
+///
+/// Variables:
+/// - $id: ID! - The discussion node ID
+/// - $after: String - Cursor for pagination (null for first page)
+pub const COMMENTS_QUERY: &str = r#"
+query ($id: ID!, $after: String) {
+    node(id: $id) {
+        ... on Discussion {
+            comments(first: 100, after: $after) {
                 nodes {
                     id
                     databaseId
@@ -52,6 +74,39 @@ query ($owner: String!, $repo: String!, $number: Int!) {
 }
 "#;
 
+/// GraphQL query to fetch replies for a comment with pagination
+///
+/// This query fetches:
+/// - Reply nodes with id, databaseId, author, createdAt, body
+/// - PageInfo for reply pagination
+///
+/// Variables:
+/// - $id: ID! - The comment node ID
+/// - $after: String - Cursor for pagination (null for first page)
+pub const REPLIES_QUERY: &str = r#"
+query ($id: ID!, $after: String) {
+    node(id: $id) {
+        ... on DiscussionComment {
+            replies(first: 100, after: $after) {
+                nodes {
+                    id
+                    databaseId
+                    author {
+                        login
+                    }
+                    createdAt
+                    body
+                }
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+            }
+        }
+    }
+}
+"#;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,18 +123,21 @@ mod tests {
 
     #[test]
     fn test_query_contains_comment_fields() {
-        assert!(DISCUSSION_QUERY.contains("comments"));
-        assert!(DISCUSSION_QUERY.contains("databaseId"));
-        assert!(DISCUSSION_QUERY.contains("author"));
-        assert!(DISCUSSION_QUERY.contains("login"));
-        assert!(DISCUSSION_QUERY.contains("replies"));
+        // COMMENTS_QUERY contains comment fields
+        assert!(COMMENTS_QUERY.contains("comments"));
+        assert!(COMMENTS_QUERY.contains("databaseId"));
+        assert!(COMMENTS_QUERY.contains("author"));
+        assert!(COMMENTS_QUERY.contains("login"));
+        assert!(COMMENTS_QUERY.contains("replies"));
     }
 
     #[test]
     fn test_query_contains_page_info() {
-        assert!(DISCUSSION_QUERY.contains("pageInfo"));
-        assert!(DISCUSSION_QUERY.contains("hasNextPage"));
-        assert!(DISCUSSION_QUERY.contains("endCursor"));
+        // COMMENTS_QUERY and REPLIES_QUERY contain pagination info
+        assert!(COMMENTS_QUERY.contains("pageInfo"));
+        assert!(COMMENTS_QUERY.contains("hasNextPage"));
+        assert!(COMMENTS_QUERY.contains("endCursor"));
+        assert!(REPLIES_QUERY.contains("pageInfo"));
     }
 
     #[test]

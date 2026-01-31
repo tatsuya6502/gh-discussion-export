@@ -103,20 +103,7 @@ impl GitHubClient {
     /// # Returns
     /// The Discussion object from the response
     pub fn execute_query(&self, query: &str, variables: serde_json::Value) -> Result<Discussion> {
-        // Build the request body
-        let request_body = serde_json::json!({
-            "query": query,
-            "variables": variables
-        });
-
-        let body_str = request_body.to_string();
-
-        // Send the request
-        let response_text = self.http_client.post(GITHUB_GRAPHQL_URL, &body_str)?;
-
-        // Parse the response
-        let response: serde_json::Value = serde_json::from_str(&response_text)
-            .map_err(|e| Error::JsonParse(format!("Failed to parse JSON: {}", e)))?;
+        let response = self.execute_query_raw(query, variables)?;
 
         // Check for GraphQL errors
         if let Some(errors) = response.get("errors").and_then(|e| e.as_array())
@@ -151,6 +138,37 @@ impl GitHubClient {
 
         Ok(discussion)
     }
+
+    /// Execute a GraphQL query and return the raw JSON response
+    ///
+    /// # Arguments
+    /// * `query` - GraphQL query string
+    /// * `variables` - Query variables as a JSON value
+    ///
+    /// # Returns
+    /// The raw JSON response as a serde_json::Value
+    pub(crate) fn execute_query_raw(
+        &self,
+        query: &str,
+        variables: serde_json::Value,
+    ) -> Result<serde_json::Value> {
+        // Build the request body
+        let request_body = serde_json::json!({
+            "query": query,
+            "variables": variables
+        });
+
+        let body_str = request_body.to_string();
+
+        // Send the request
+        let response_text = self.http_client.post(GITHUB_GRAPHQL_URL, &body_str)?;
+
+        // Parse the response
+        let response: serde_json::Value = serde_json::from_str(&response_text)
+            .map_err(|e| Error::JsonParse(format!("Failed to parse JSON: {}", e)))?;
+
+        Ok(response)
+    }
 }
 
 #[cfg(test)]
@@ -178,6 +196,7 @@ mod tests {
                 "data": {
                     "repository": {
                         "discussion": {
+                            "id": "discussion_test_1",
                             "title": "Test Discussion",
                             "number": 1,
                             "url": "https://github.com/test/repo/discussions/1",
@@ -211,6 +230,7 @@ mod tests {
         let result = client.execute_query("query {}", serde_json::json!({}));
         assert!(result.is_ok());
         let discussion = result.unwrap();
+        assert_eq!(discussion.id, "discussion_test_1");
         assert_eq!(discussion.title, "Test Discussion");
         assert_eq!(discussion.number, 1);
     }

@@ -119,7 +119,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - GraphQL query definitions
   - serde response models
   - API error handling
-- [ ] 3. **discussion-fetch** (35 tasks)
+- [x] 3. **discussion-fetch** (35 tasks)
   - Discussion metadata fetching
   - Cursor-based pagination for comments
   - Cursor-based pagination for replies
