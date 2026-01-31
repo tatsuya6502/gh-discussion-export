@@ -15,6 +15,15 @@ pub struct PageInfo {
     pub end_cursor: Option<String>,
 }
 
+impl Default for PageInfo {
+    fn default() -> Self {
+        Self {
+            has_next_page: false,
+            end_cursor: None,
+        }
+    }
+}
+
 /// A reply to a comment
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +51,8 @@ pub struct Comment {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct CommentReplies {
+    /// nodes may be missing in COMMENTS_QUERY responses (only pageInfo is returned)
+    #[serde(default)]
     pub nodes: Option<Vec<Option<Reply>>>,
     pub page_info: PageInfo,
 }
@@ -57,6 +68,8 @@ pub struct Discussion {
     pub created_at: DateTime<Utc>,
     pub body: String,
     pub author: Option<Author>,
+    /// comments is populated after initial query via fetch_all_comments
+    #[serde(default)]
     pub comments: DiscussionComments,
 }
 
@@ -66,6 +79,18 @@ pub struct Discussion {
 pub struct DiscussionComments {
     pub nodes: Option<Vec<Option<Comment>>>,
     pub page_info: PageInfo,
+}
+
+impl Default for DiscussionComments {
+    fn default() -> Self {
+        Self {
+            nodes: None,
+            page_info: PageInfo {
+                has_next_page: false,
+                end_cursor: None,
+            },
+        }
+    }
 }
 
 /// GraphQL error response structure

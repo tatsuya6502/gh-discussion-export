@@ -1,11 +1,11 @@
-/// GraphQL query to fetch a discussion with comments and replies
+/// GraphQL query to fetch discussion metadata
 ///
-/// This query fetches:
+/// This query fetches only discussion metadata:
 /// - Discussion ID (node ID for pagination queries)
 /// - Discussion metadata (title, number, URL, created at, body, author)
-/// - All comments with databaseId, author, createdAt, body
-/// - All replies to comments with databaseId, author, createdAt, body
-/// - Pagination cursors (hasNextPage, endCursor) for both comments and replies
+///
+/// Note: Comments and replies are fetched separately using pagination queries
+/// (COMMENTS_QUERY and REPLIES_QUERY) to ensure complete data retrieval.
 pub const DISCUSSION_QUERY: &str = r#"
 query ($owner: String!, $repo: String!, $number: Int!) {
     repository(owner: $owner, name: $repo) {
@@ -18,36 +18,6 @@ query ($owner: String!, $repo: String!, $number: Int!) {
             body
             author {
                 login
-            }
-            comments(first: 100) {
-                nodes {
-                    id
-                    databaseId
-                    author {
-                        login
-                    }
-                    createdAt
-                    body
-                    replies(first: 100) {
-                        nodes {
-                            id
-                            databaseId
-                            author {
-                                login
-                            }
-                            createdAt
-                            body
-                        }
-                        pageInfo {
-                            hasNextPage
-                            endCursor
-                        }
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                    endCursor
-                }
             }
         }
     }
@@ -143,18 +113,21 @@ mod tests {
 
     #[test]
     fn test_query_contains_comment_fields() {
-        assert!(DISCUSSION_QUERY.contains("comments"));
-        assert!(DISCUSSION_QUERY.contains("databaseId"));
-        assert!(DISCUSSION_QUERY.contains("author"));
-        assert!(DISCUSSION_QUERY.contains("login"));
-        assert!(DISCUSSION_QUERY.contains("replies"));
+        // COMMENTS_QUERY contains comment fields
+        assert!(COMMENTS_QUERY.contains("comments"));
+        assert!(COMMENTS_QUERY.contains("databaseId"));
+        assert!(COMMENTS_QUERY.contains("author"));
+        assert!(COMMENTS_QUERY.contains("login"));
+        assert!(COMMENTS_QUERY.contains("replies"));
     }
 
     #[test]
     fn test_query_contains_page_info() {
-        assert!(DISCUSSION_QUERY.contains("pageInfo"));
-        assert!(DISCUSSION_QUERY.contains("hasNextPage"));
-        assert!(DISCUSSION_QUERY.contains("endCursor"));
+        // COMMENTS_QUERY and REPLIES_QUERY contain pagination info
+        assert!(COMMENTS_QUERY.contains("pageInfo"));
+        assert!(COMMENTS_QUERY.contains("hasNextPage"));
+        assert!(COMMENTS_QUERY.contains("endCursor"));
+        assert!(REPLIES_QUERY.contains("pageInfo"));
     }
 
     #[test]
