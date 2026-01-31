@@ -26,7 +26,7 @@ use std::io::ErrorKind;
 /// the token is empty.
 pub(crate) fn get_github_token(command_runner: &dyn CommandRunner) -> Result<String> {
     // Execute `gh auth token` command
-    let args = vec!["auth".to_string(), "token".to_string()];
+    let args = vec!["auth", "token"];
     let output = command_runner.run("gh", &args).map_err(|err| {
         // Distinguish between "gh not found" vs other I/O errors
         if err.kind() == ErrorKind::NotFound {

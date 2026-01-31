@@ -24,14 +24,27 @@ pub(crate) trait CommandRunner: Send + Sync {
     ///
     /// Returns `Ok(Output)` containing the command's stdout, stderr, and exit status.
     /// Returns `Err(std::io::Error)` if the command could not be executed.
-    fn run(&self, program: &str, args: &[String]) -> std::io::Result<std::process::Output>;
+    fn run<'a, 'b>(
+        &'a self,
+        program: &'a str,
+        args: &'a [&'b str],
+    ) -> std::io::Result<std::process::Output>
+    where
+        'b: 'a;
 }
 
 /// Production implementation of `CommandRunner` using `std::process::Command`.
 pub(crate) struct StdCommandRunner;
 
 impl CommandRunner for StdCommandRunner {
-    fn run(&self, program: &str, args: &[String]) -> std::io::Result<std::process::Output> {
+    fn run<'a, 'b>(
+        &'a self,
+        program: &'a str,
+        args: &'a [&'b str],
+    ) -> std::io::Result<std::process::Output>
+    where
+        'b: 'a,
+    {
         std::process::Command::new(program).args(args).output()
     }
 }
