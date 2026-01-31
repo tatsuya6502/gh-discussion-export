@@ -75,7 +75,7 @@ By using `mockall` with a dependency injection pattern:
 - Reusable pattern for other modules that need to execute commands
 
 **Implementation:**
-- `CommandRunner` trait with `run(&self, program: &str, args: &[String])` method
+- `CommandRunner` trait with `run<'a, 'b>(&'a self, program: &'a str, args: &'a [&'b str]) where 'b: 'a` method
 - `StdCommandRunner` production implementation using `std::process::Command`
 - `#[cfg_attr(test, automock)]` generates `MockCommandRunner` in tests
 - `get_github_token()` accepts `&dyn CommandRunner` parameter
