@@ -114,7 +114,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - GitHub CLI authentication
   - Error types with thiserror
   - Project structure setup
-- [ ] 2. **graphql-client** (34 tasks)
+- [x] 2. **graphql-client** (37 tasks)
   - reqwest HTTP client setup
   - GraphQL query definitions
   - serde response models
@@ -125,7 +125,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - Cursor-based pagination for replies
   - Chronological sorting
   - Deleted user handling
-- [ ] 4. **markdown-output** (44 tasks)
+- [ ] 4. **markdown-output** (51 tasks)
   - Header generation with metadata
   - Original post formatting (##)
   - Comment formatting (###)
@@ -135,7 +135,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - Wire all modules in main.rs
   - Complete workflow pipeline
   - Error handling and messaging
-- [ ] 6. **e2e-tests** (53 tasks)
+- [ ] 6. **e2e-tests** (55 tasks)
   - Integration tests with real GitHub API
   - Pagination tests
   - Edge case tests (deleted users, large discussions)
