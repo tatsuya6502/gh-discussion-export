@@ -38,9 +38,13 @@ Use `clap` with derive macros for type-safe argument parsing.
 **Rationale:** `clap` is the de-facto standard for Rust CLI tools. The derive API provides compile-time verification and cleaner code compared to the builder pattern. Alternative `structopt` is deprecated.
 
 ### Error Handling: `thiserror`
-Use `thiserror` for ergonomic error type definitions.
+Use `thiserror` for ergonomic error type definitions with the following error variants:
+- `GitHubCliNotFound` - GitHub CLI is not installed on the system
+- `Authentication` - User is not authenticated with GitHub CLI
+- `InvalidArgs(String)` - Invalid command-line arguments
+- `Io(std::io::Error)` - Wrapped I/O errors with automatic conversion
 
-**Rationale:** `thiserror` simplifies error enum creation with macros for `Display` and `Error` traits. It integrates seamlessly with `anyhow` for error propagation while maintaining structured error types for users.
+**Rationale:** `thiserror` simplifies error enum creation with macros for `Display` and `Error` traits. It integrates seamlessly with `anyhow` for error propagation while maintaining structured error types for users. The `GitHubCliNotFound` variant provides a distinct error from `Authentication`, allowing users to understand whether they need to install GitHub CLI or authenticate with it.
 
 ### Authentication Strategy
 Call `gh auth token` command and capture stdout.
@@ -53,6 +57,31 @@ Call `gh auth token` command and capture stdout.
 Create unit test modules alongside implementation code using `#[cfg(test)]`.
 
 **Rationale:** Rust's convention of co-locating tests with implementation keeps tests close to the code they test and ensures they're run with `cargo test`.
+
+### Test Mocking Strategy: Dependency Injection with `mockall`
+Use a thin `CommandRunner` trait abstraction over `std::process::Command` to enable mocking in tests without environment variable manipulation.
+
+**Rationale:** Direct mocking of `std::process::Command` is not possible. The traditional approach of overriding `PATH` environment variable in tests requires:
+- Running tests with `--test-threads=1` (serial execution only)
+- `unsafe` blocks for environment variable manipulation
+- Race conditions when multiple tests modify `PATH`
+- Fragile test setup with temporary files
+
+By using `mockall` with a dependency injection pattern:
+- Tests can run in parallel without race conditions
+- No `unsafe` blocks required
+- Mock behavior is explicit and clear in test code
+- Better error messages from mock expectations
+- Reusable pattern for other modules that need to execute commands
+
+**Implementation:**
+- `CommandRunner` trait with `run<'a, 'b>(&'a self, program: &'a str, args: &'a [&'b str]) where 'b: 'a` method
+- `StdCommandRunner` production implementation using `std::process::Command`
+- `#[cfg_attr(test, automock)]` generates `MockCommandRunner` in tests
+- `get_github_token()` accepts `&dyn CommandRunner` parameter
+- Tests inject `MockCommandRunner` with `.expect()` and `.returning()`
+
+**Alternative considered:** PATH manipulation with temporary scripts - Rejected due to thread safety issues and `unsafe` code requirements.
 
 ## Risks / Trade-offs
 

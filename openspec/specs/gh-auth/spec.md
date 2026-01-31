@@ -9,11 +9,11 @@ The system SHALL retrieve an authentication token by calling the GitHub CLI comm
 
 #### Scenario: GitHub CLI not installed
 - **WHEN** `gh` command is not found on system
-- **THEN** system exits with error message directing user to install GitHub CLI
+- **THEN** system returns `Error::GitHubCliNotFound` with message directing user to install GitHub CLI from <https://cli.github.com/>
 
 #### Scenario: User not authenticated
 - **WHEN** `gh auth token` returns an error or non-zero exit code
-- **THEN** system exits with error message directing user to run `gh auth login`
+- **THEN** system returns `Error::Authentication` with message directing user to run `gh auth login`
 
 ### Requirement: Token format validation
 The system SHALL validate that the retrieved token is a non-empty string.
