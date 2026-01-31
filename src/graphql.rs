@@ -77,7 +77,7 @@ query ($id: ID!, $after: String) {
                     }
                     createdAt
                     body
-                    replies {
+                    replies(first: 100) {
                         pageInfo {
                             hasNextPage
                             endCursor

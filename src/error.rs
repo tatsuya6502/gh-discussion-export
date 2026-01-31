@@ -38,6 +38,10 @@ pub enum Error {
     /// Permission denied
     #[error("Permission denied: {0}")]
     PermissionDenied(String),
+
+    /// API invariant violation - indicates API returned inconsistent state
+    #[error("API invariant violation: {0}")]
+    ApiInvariant(String),
 }
 
 /// Convenient Result type alias for application errors
@@ -137,6 +141,15 @@ mod tests {
         assert_eq!(
             err.to_string(),
             "Permission denied: Access to resource denied"
+        );
+    }
+
+    #[test]
+    fn test_error_api_invariant_display() {
+        let err = Error::ApiInvariant("hasNextPage was true but endCursor was null".to_string());
+        assert_eq!(
+            err.to_string(),
+            "API invariant violation: hasNextPage was true but endCursor was null"
         );
     }
 }

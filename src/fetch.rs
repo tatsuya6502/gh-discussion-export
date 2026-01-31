@@ -70,6 +70,11 @@ pub(crate) fn fetch_discussion(
         } else {
             Some(replies.into_iter().map(Some).collect())
         };
+        // Reset page_info to indicate no more pages since we've fetched all replies
+        comment.replies.page_info = crate::models::PageInfo {
+            has_next_page: false,
+            end_cursor: None,
+        };
     }
 
     // Step 5: Replace null authors with `<deleted>` placeholder (task 4.6)
@@ -95,6 +100,11 @@ pub(crate) fn fetch_discussion(
         None
     } else {
         Some(comments.into_iter().map(Some).collect())
+    };
+    // Reset page_info to indicate no more pages since we've fetched all comments
+    discussion.comments.page_info = crate::models::PageInfo {
+        has_next_page: false,
+        end_cursor: None,
     };
 
     Ok(discussion)
@@ -182,8 +192,14 @@ pub(crate) fn fetch_all_comments(
             break;
         }
 
-        // Set cursor for next page
+        // Set cursor for next page - protect against infinite loop
+        // if has_next_page is true but end_cursor is None, this is an API error
         after = comments_response.page_info.end_cursor;
+        if after.is_none() {
+            return Err(Error::ApiInvariant(
+                "hasNextPage was true but endCursor was null".to_string(),
+            ));
+        }
     }
 
     Ok(all_comments)
@@ -229,8 +245,14 @@ pub(crate) fn fetch_all_replies(client: &GitHubClient, comment_id: &str) -> Resu
             break;
         }
 
-        // Set cursor for next page
+        // Set cursor for next page - protect against infinite loop
+        // if has_next_page is true but end_cursor is None, this is an API error
         after = replies_response.page_info.end_cursor;
+        if after.is_none() {
+            return Err(Error::ApiInvariant(
+                "hasNextPage was true but endCursor was null".to_string(),
+            ));
+        }
     }
 
     Ok(all_replies)
@@ -240,13 +262,27 @@ pub(crate) fn fetch_all_replies(client: &GitHubClient, comment_id: &str) -> Resu
 ///
 /// This is a helper function that performs the same HTTP request as
 /// `GitHubClient::execute_query` but returns the raw data instead of
-/// parsing it into a Discussion struct.
+/// parsing it into a Discussion struct. Also checks for GraphQL errors.
 fn execute_query_raw(
     client: &GitHubClient,
     query: &str,
     variables: serde_json::Value,
 ) -> Result<Value> {
-    client.execute_query_raw(query, variables)
+    let response = client.execute_query_raw(query, variables)?;
+
+    // Check for GraphQL errors
+    if let Some(errors) = response.get("errors").and_then(|e| e.as_array())
+        && !errors.is_empty()
+    {
+        let error_messages: Vec<String> = errors
+            .iter()
+            .filter_map(|e| e.get("message").and_then(|m| m.as_str()))
+            .map(|s| s.to_string())
+            .collect();
+        return Err(Error::GraphQL(error_messages.join("; ")));
+    }
+
+    Ok(response)
 }
 
 /// Parse a raw JSON response into a CommentsResponse
