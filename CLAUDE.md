@@ -136,6 +136,21 @@ All commands must pass before committing changes. This ensures:
 - Code is properly formatted
 - All tests pass
 
+## Git Workflow
+
+**Important**: Git commits and pushes are performed manually by the user. Do not automatically commit or push changes.
+
+The user will:
+- Review the changes made by the AI
+- Create commits manually using their preferred method
+- Push to GitHub when ready
+
+The AI assistant should:
+- Make code changes as requested
+- Run verification commands (cargo check, clippy, fmt, test)
+- Provide summaries of changes
+- **NOT** execute git commit or git push commands
+
 ## PR Review Workflow
 
 When working on pull requests, use this command to view unresolved review comments:
