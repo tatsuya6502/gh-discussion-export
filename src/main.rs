@@ -27,7 +27,13 @@ fn main() -> Result<()> {
     };
 
     // Create GitHub client
-    let http_client = Box::new(ReqwestClient::new(token)?);
+    let http_client = match ReqwestClient::new(token) {
+        Ok(client) => Box::new(client),
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
+    };
     let client = gh_discussion_export::client::GitHubClient::new(http_client);
 
     // Fetch discussion
