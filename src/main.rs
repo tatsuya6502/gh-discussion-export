@@ -1,11 +1,10 @@
 use clap::Parser;
 use gh_discussion_export::cli::CliArgs;
 use gh_discussion_export::client::ReqwestClient;
-use gh_discussion_export::error::Result;
 use gh_discussion_export::fetch::fetch_discussion;
 use gh_discussion_export::output::{format_discussion, write_output};
 
-fn main() -> Result<()> {
+fn main() {
     // Parse command-line arguments
     let args = CliArgs::parse();
 
@@ -59,6 +58,4 @@ fn main() -> Result<()> {
 
     // Print success message
     println!("Discussion exported to: {}", output_path);
-
-    Ok(())
 }
