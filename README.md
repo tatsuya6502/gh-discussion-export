@@ -125,7 +125,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - Cursor-based pagination for replies
   - Chronological sorting
   - Deleted user handling
-- [ ] 4. **markdown-output** (51 tasks)
+- [x] 4. **markdown-output** (51 tasks)
   - Header generation with metadata
   - Original post formatting (##)
   - Comment formatting (###)
