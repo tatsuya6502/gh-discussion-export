@@ -6,11 +6,11 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 This project follows the [OpenSpec methodology][openspec] &mdash; a specification-first approach where all changes are designed and documented before implementation.
 
-The specification is located in [`openspec/spec`](openspec/spec) and includes detailed requirements, design decisions, and implementation tasks for each modular change.
+The specification is located in [`openspec/specs`](openspec/specs) and includes detailed requirements, design decisions, and implementation tasks for each modular change.
 
 When contributing, please follow this workflow:
 
-1. Check the existing specifications in `openspec/spec`.
+1. Check the existing specifications in `openspec/specs`.
 2. For new features or significant changes, consider creating an OpenSpec change proposal first.
 3. Ensure implementation matches the documented requirements.
 4. Keep specifications in sync with code changes.

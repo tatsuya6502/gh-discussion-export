@@ -92,7 +92,7 @@ The README.md must include the following sections with specific content:
 **Architecture Section:**
 - Explains how the tool works (GraphQL API, cursor-based pagination, Markdown formatting)
 - Describes OpenSpec-driven development methodology
-- Links to specification at `openspec/spec`
+- Links to specification at `openspec/specs`
 - Lists module organization based on specifications
 
 **License Information:**

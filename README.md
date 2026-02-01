@@ -9,7 +9,7 @@ Exports a complete GitHub Discussion (original post + all comments + all replies
 **Key characteristics:**
 - **Lossless**: Content is preserved verbatim (no summarization, reformatting, or interpretation).
 - **Complete**: Fetches all comments and replies via cursor-based pagination.
-- **Structured**: Hierarchical Markdown format (`## Original Post` → `### Comments` → `#### Replies`).
+- **Structured**: Hierarchical Markdown format (`## Original Post` / `## Comments` → `### Comment N` → `#### Reply N`).
 
 ## Prerequisites
 
@@ -153,7 +153,7 @@ The tool fetches discussion data from GitHub's GraphQL API and formats it as Mar
 
 This project follows the OpenSpec methodology &mdash; a specification-first approach where all changes are designed and documented before implementation.
 
-The specification is located in [`openspec/spec`](openspec/spec) and includes detailed requirements, design decisions, and implementation tasks for each modular change.
+The specification is located in [`openspec/specs`](openspec/specs) and includes detailed requirements, design decisions, and implementation tasks for each modular change.
 
 #### Module Organization
 
