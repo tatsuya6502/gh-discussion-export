@@ -59,3 +59,4 @@
 - [ ] 10.1 Run `cargo run -- --help` to verify CLI help displays
 - [ ] 10.2 Run with invalid args to verify error handling
 - [ ] 10.3 Run with valid small discussion to verify end-to-end (if token available)
+- [ ] 10.4 Test default output path: verify file is created as `<number>-discussion.md` when no `--output` arg provided
