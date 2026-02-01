@@ -147,4 +147,11 @@ gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR_NUMBER
 
 This requires the `gh pr-review` extension to be installed.
 
+<details>
+<summary>📦 Installation instructions</summary>
 
+```bash
+gh extension install agynio/gh-pr-review
+```
+
+</details>
