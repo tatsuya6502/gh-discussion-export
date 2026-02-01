@@ -20,8 +20,12 @@ fn get_author_login(author: Option<&crate::models::Author>) -> &str {
 /// Prefixes '#' at the start of any line with a backslash to prevent
 /// it from being interpreted as a Markdown heading. This preserves
 /// document structure while keeping content readable.
+///
+/// Preserves trailing newlines to maintain lossless fidelity.
 fn escape_headings(body: &str) -> String {
-    body.lines()
+    let ends_with_newline = body.ends_with('\n');
+    let mut result = body
+        .lines()
         .map(|line| {
             if line.starts_with('#') {
                 format!("\\{}", line)
@@ -30,7 +34,12 @@ fn escape_headings(body: &str) -> String {
             }
         })
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n");
+
+    if ends_with_newline {
+        result.push('\n');
+    }
+    result
 }
 
 /// Normalize CRLF line endings to LF
@@ -295,6 +304,18 @@ mod tests {
             escaped,
             "\\## This is a heading\nRegular text\n\\### Another heading"
         );
+    }
+
+    #[test]
+    fn test_escape_headings_preserves_trailing_newline() {
+        let input = "# Heading\nContent\n";
+        let escaped = escape_headings(input);
+
+        assert!(
+            escaped.ends_with('\n'),
+            "trailing newline should be preserved"
+        );
+        assert_eq!(escaped, "\\# Heading\nContent\n");
     }
 
     #[test]
