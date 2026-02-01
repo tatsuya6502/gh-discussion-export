@@ -6,6 +6,7 @@
 
 use crate::error::{Error, Result};
 use crate::models::{Comment, Discussion, Reply};
+use chrono::SecondsFormat;
 use std::fs;
 
 /// Helper function to extract author login, returning "<deleted>" if null
@@ -77,7 +78,9 @@ pub(crate) fn generate_header(discussion: &Discussion, owner: &str, repo: &str) 
         repo,
         discussion.number,
         discussion.url,
-        discussion.created_at,
+        discussion
+            .created_at
+            .to_rfc3339_opts(SecondsFormat::Secs, true),
         author
     )
 }
@@ -94,7 +97,11 @@ pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
     let body = process_body(&discussion.body);
     format!(
         "## Original Post\n_author: {} ({})_\n{}\n---\n",
-        author, discussion.created_at, body
+        author,
+        discussion
+            .created_at
+            .to_rfc3339_opts(SecondsFormat::Secs, true),
+        body
     )
 }
 
@@ -123,7 +130,12 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 
                 output.push_str(&format!(
                     "### Comment {}\n_author: {} ({})_\n{}\n",
-                    comment_num, author, comment.created_at, body
+                    comment_num,
+                    author,
+                    comment
+                        .created_at
+                        .to_rfc3339_opts(SecondsFormat::Secs, true),
+                    body
                 ));
 
                 // Add replies if present
@@ -137,7 +149,11 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 
                             output.push_str(&format!(
                                 "#### Reply {}.{}\n_author: {} ({})_\n{}\n",
-                                comment_num, reply_num, reply_author, reply.created_at, reply_body
+                                comment_num,
+                                reply_num,
+                                reply_author,
+                                reply.created_at.to_rfc3339_opts(SecondsFormat::Secs, true),
+                                reply_body
                             ));
                         }
                     }
@@ -220,7 +236,7 @@ mod tests {
         assert!(header.contains("# Test Discussion"));
         assert!(header.contains("Discussion: owner/repo#123"));
         assert!(header.contains("URL: https://github.com/owner/repo/discussions/123"));
-        assert!(header.contains("Created at: 2024-01-15 10:30:00 UTC"));
+        assert!(header.contains("Created at: 2024-01-15T10:30:00Z"));
         assert!(header.contains("Author: testuser"));
         assert!(header.ends_with("---\n"));
     }
@@ -240,7 +256,7 @@ mod tests {
         let post = generate_original_post(&discussion);
 
         assert!(post.contains("## Original Post"));
-        assert!(post.contains("_author: testuser (2024-01-15 10:30:00 UTC)_"));
+        assert!(post.contains("_author: testuser (2024-01-15T10:30:00Z)_"));
         assert!(post.contains("This is the original post body."));
         assert!(post.ends_with("---\n"));
     }
