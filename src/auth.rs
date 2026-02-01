@@ -9,9 +9,23 @@ use std::io::ErrorKind;
 
 /// Retrieves a GitHub authentication token by calling `gh auth token`.
 ///
-/// This function executes the GitHub CLI command to retrieve the current
-/// authentication token. It distinguishes between the GitHub CLI not being
-/// installed and the user not being authenticated.
+/// This is a convenience function that uses the standard command runner.
+/// For testing, use `get_github_token_with_runner` with a mock runner.
+///
+/// # Returns
+///
+/// Returns `Ok(String)` containing the GitHub token if successful.
+///
+/// Returns `Err(Error::GitHubCliNotFound)` if the GitHub CLI is not installed.
+/// Returns `Err(Error::Authentication)` if the user is not authenticated or
+/// the token is empty.
+pub fn get_github_token() -> Result<String> {
+    get_github_token_with_runner(&crate::command_runner::StdCommandRunner)
+}
+
+/// Retrieves a GitHub authentication token using a custom command runner.
+///
+/// This function is primarily used for testing with mock command runners.
 ///
 /// # Arguments
 ///
@@ -24,7 +38,7 @@ use std::io::ErrorKind;
 /// Returns `Err(Error::GitHubCliNotFound)` if the GitHub CLI is not installed.
 /// Returns `Err(Error::Authentication)` if the user is not authenticated or
 /// the token is empty.
-pub(crate) fn get_github_token(command_runner: &dyn CommandRunner) -> Result<String> {
+pub(crate) fn get_github_token_with_runner(command_runner: &dyn CommandRunner) -> Result<String> {
     // Execute `gh auth token` command
     let args = vec!["auth", "token"];
     let output = command_runner.run("gh", &args).map_err(|err| {
@@ -98,7 +112,7 @@ mod tests {
             .times(1)
             .returning(|_, _| Ok(mock_success_output("ghp_test_token_123")));
 
-        let result = get_github_token(&mock);
+        let result = get_github_token_with_runner(&mock);
         let token = result.expect("Expected Ok(token), got Err");
         assert_eq!(token, "ghp_test_token_123");
     }
@@ -113,7 +127,7 @@ mod tests {
             ))
         });
 
-        let result = get_github_token(&mock);
+        let result = get_github_token_with_runner(&mock);
         assert!(matches!(result, Err(Error::GitHubCliNotFound)));
     }
 
@@ -124,7 +138,7 @@ mod tests {
             .times(1)
             .returning(|_, _| Ok(mock_failure_output()));
 
-        let result = get_github_token(&mock);
+        let result = get_github_token_with_runner(&mock);
         assert!(matches!(result, Err(Error::Authentication)));
     }
 
@@ -135,7 +149,7 @@ mod tests {
             .times(1)
             .returning(|_, _| Ok(mock_success_output("")));
 
-        let result = get_github_token(&mock);
+        let result = get_github_token_with_runner(&mock);
         assert!(matches!(result, Err(Error::Authentication)));
     }
 }

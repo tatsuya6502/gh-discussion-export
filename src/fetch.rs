@@ -38,7 +38,7 @@ struct RepliesResponse {
 /// - Sorts comments by createdAt ascending
 /// - Sorts replies for each comment by createdAt ascending
 /// - Fails immediately on any error (no partial results)
-pub(crate) fn fetch_discussion(
+pub fn fetch_discussion(
     client: &GitHubClient,
     owner: &str,
     repo: &str,
@@ -67,7 +67,7 @@ pub(crate) fn fetch_discussion(
             .replies
             .nodes
             .as_ref()
-            .map_or(false, |nodes| nodes.iter().any(|r| r.is_some()))
+            .is_some_and(|nodes| nodes.iter().any(|r| r.is_some()))
             || comment.replies.page_info.has_next_page;
 
         if has_replies {
@@ -887,7 +887,7 @@ mod tests {
         use chrono::{DateTime, Utc};
 
         // Create comments out of order
-        let mut comments = vec![
+        let mut comments = [
             Comment {
                 id: "comment_2".to_string(),
                 database_id: 2,
