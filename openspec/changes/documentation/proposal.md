@@ -4,11 +4,17 @@ The GitHub Discussion Exporter is now complete and functional, but users need do
 
 ## What Changes
 
-- Create README.md with project description and installation
-- Add usage examples and command reference
-- Document prerequisites (GitHub CLI, Rust toolchain)
-- Add contribution guidelines
-- Add license information if applicable
+- Create README.md with:
+  - Project description and installation instructions
+  - Usage examples and command reference
+  - Prerequisites (GitHub CLI, Rust toolchain, OpenSpec CLI)
+  - Architecture section explaining tool internals and OpenSpec methodology
+  - License information
+- Create CONTRIBUTING.md with:
+  - Development setup instructions
+  - OpenSpec-Driven Development guidelines
+  - AI-Generated Code policy
+  - Testing, code style, and workflow guidelines
 
 ## Capabilities
 
