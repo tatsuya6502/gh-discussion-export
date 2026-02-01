@@ -72,7 +72,7 @@ fn process_body(body: &str) -> String {
 pub(crate) fn generate_header(discussion: &Discussion, owner: &str, repo: &str) -> String {
     let author = get_author_login(discussion.author.as_ref());
     format!(
-        "# {}\nDiscussion: {}/{}#{}\nURL: {}\nCreated at: {}\nAuthor: {}\n---\n",
+        "# {}\n\nDiscussion: {}/{}#{}\nURL: {}\n\nCreated at: {}\nAuthor: {}\n\n---\n",
         discussion.title,
         owner,
         repo,
@@ -96,7 +96,7 @@ pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
     let author = get_author_login(discussion.author.as_ref());
     let body = process_body(&discussion.body);
     format!(
-        "## Original Post\n_author: {} ({})_\n{}\n---\n",
+        "## Original Post\n\n_author: {} ({})_\n\n{}\n---\n",
         author,
         discussion
             .created_at
@@ -118,7 +118,7 @@ pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
 ///
 /// If there are no comments, still emits the ## Comments heading.
 pub(crate) fn generate_comments(discussion: &Discussion) -> String {
-    let mut output = String::from("## Comments\n");
+    let mut output = String::from("## Comments\n\n");
 
     if let Some(ref comments) = discussion.comments.nodes {
         let mut comment_num = 0;
@@ -129,7 +129,7 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
                 let body = process_body(&comment.body);
 
                 output.push_str(&format!(
-                    "### Comment {}\n_author: {} ({})_\n{}\n",
+                    "### Comment {}\n_author: {} ({})_\n\n{}\n",
                     comment_num,
                     author,
                     comment
@@ -148,7 +148,7 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
                             let reply_body = process_body(&reply.body);
 
                             output.push_str(&format!(
-                                "#### Reply {}.{}\n_author: {} ({})_\n{}\n",
+                                "#### Reply {}.{}\n_author: {} ({})_\n\n{}\n",
                                 comment_num,
                                 reply_num,
                                 reply_author,
