@@ -8,20 +8,11 @@ pub struct Author {
 }
 
 /// Pagination information for GraphQL connections
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Default, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PageInfo {
     pub has_next_page: bool,
     pub end_cursor: Option<String>,
-}
-
-impl Default for PageInfo {
-    fn default() -> Self {
-        Self {
-            has_next_page: false,
-            end_cursor: None,
-        }
-    }
 }
 
 /// A reply to a comment

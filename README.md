@@ -67,7 +67,7 @@ Author: username
 
 ## Original Post
 
-_author: username (2024-01-15T10:30:00Z)
+_author: username (2024-01-15T10:30:00Z)_
 
 <original body content>
 
@@ -75,13 +75,17 @@ _author: username (2024-01-15T10:30:00Z)
 
 ## Comments
 
+
 ### Comment 1
-_author: username (2024-01-15T11:00:00Z)
+
+_author: username (2024-01-15T11:00:00Z)_
 
 <comment body>
 
+
 #### Reply 1.1
-_author: username (2024-01-15T11:30:00Z)
+
+_author: username (2024-01-15T11:30:00Z)_
 
 <reply body>
 
@@ -103,7 +107,7 @@ The project is organized into 7 modular changes (OpenSpec-driven):
 2. **graphql-client** - reqwest HTTP client, GraphQL queries, serde models
 3. **discussion-fetch** - Cursor-based pagination for comments/replies
 4. **markdown-output** - Format generation, file writing
-5. **integration** - Wire all modules in `main.rs`
+5. **integration** - Wire all modules in `lib.rs`
 6. **e2e-tests** - Integration tests against real GitHub API
 7. **documentation** - README and contribution guidelines
 
@@ -131,8 +135,8 @@ The project is organized into 7 modular changes (OpenSpec-driven):
   - Comment formatting (###)
   - Reply formatting (####)
   - File writing (UTF-8, LF)
-- [ ] 5. **integration** (32 tasks)
-  - Wire all modules in main.rs
+- [x] 5. **integration** (32 tasks)
+  - Wire all modules in lib.rs
   - Complete workflow pipeline
   - Error handling and messaging
 - [ ] 6. **e2e-tests** (55 tasks)

@@ -5,9 +5,12 @@
 // document structure).
 
 use crate::error::{Error, Result};
-use crate::models::{Comment, Discussion, Reply};
+use crate::models::Discussion;
 use chrono::SecondsFormat;
 use std::fs;
+
+#[cfg(test)]
+use crate::models::{Comment, Reply};
 
 /// Helper function to extract author login, returning "<deleted>" if null
 fn get_author_login(author: Option<&crate::models::Author>) -> &str {
@@ -122,41 +125,37 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 
     if let Some(ref comments) = discussion.comments.nodes {
         let mut comment_num = 0;
-        for comment_opt in comments.iter() {
-            if let Some(comment) = comment_opt {
-                comment_num += 1;
-                let author = get_author_login(comment.author.as_ref());
-                let body = process_body(&comment.body);
+        for comment in comments.iter().flatten() {
+            comment_num += 1;
+            let author = get_author_login(comment.author.as_ref());
+            let body = process_body(&comment.body);
 
-                output.push_str(&format!(
-                    "### Comment {}\n_author: {} ({})_\n\n{}\n",
-                    comment_num,
-                    author,
-                    comment
-                        .created_at
-                        .to_rfc3339_opts(SecondsFormat::Secs, true),
-                    body
-                ));
+            output.push_str(&format!(
+                "\n### Comment {}\n\n_author: {} ({})_\n\n{}\n\n",
+                comment_num,
+                author,
+                comment
+                    .created_at
+                    .to_rfc3339_opts(SecondsFormat::Secs, true),
+                body
+            ));
 
-                // Add replies if present
-                if let Some(ref replies) = comment.replies.nodes {
-                    let mut reply_num = 0;
-                    for reply_opt in replies.iter() {
-                        if let Some(reply) = reply_opt {
-                            reply_num += 1;
-                            let reply_author = get_author_login(reply.author.as_ref());
-                            let reply_body = process_body(&reply.body);
+            // Add replies if present
+            if let Some(ref replies) = comment.replies.nodes {
+                let mut reply_num = 0;
+                for reply in replies.iter().flatten() {
+                    reply_num += 1;
+                    let reply_author = get_author_login(reply.author.as_ref());
+                    let reply_body = process_body(&reply.body);
 
-                            output.push_str(&format!(
-                                "#### Reply {}.{}\n_author: {} ({})_\n\n{}\n",
-                                comment_num,
-                                reply_num,
-                                reply_author,
-                                reply.created_at.to_rfc3339_opts(SecondsFormat::Secs, true),
-                                reply_body
-                            ));
-                        }
-                    }
+                    output.push_str(&format!(
+                        "\n#### Reply {}.{}\n\n_author: {} ({})_\n\n{}\n\n",
+                        comment_num,
+                        reply_num,
+                        reply_author,
+                        reply.created_at.to_rfc3339_opts(SecondsFormat::Secs, true),
+                        reply_body
+                    ));
                 }
             }
         }
@@ -171,7 +170,7 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 /// Each section already includes proper trailing newlines.
 ///
 /// Returns complete Markdown String ready for file output.
-pub(crate) fn format_discussion(discussion: &Discussion, owner: &str, repo: &str) -> String {
+pub fn format_discussion(discussion: &Discussion, owner: &str, repo: &str) -> String {
     let header = generate_header(discussion, owner, repo);
     let original_post = generate_original_post(discussion);
     let comments = generate_comments(discussion);
@@ -183,7 +182,7 @@ pub(crate) fn format_discussion(discussion: &Discussion, owner: &str, repo: &str
 ///
 /// Uses std::fs::write to create file with UTF-8 encoding and LF line endings.
 /// Returns Error if I/O operation fails.
-pub(crate) fn write_output(markdown: &str, path: &str) -> Result<()> {
+pub fn write_output(markdown: &str, path: &str) -> Result<()> {
     fs::write(path, markdown).map_err(Error::Io)
 }
 
