@@ -1,6 +1,6 @@
 ## Context
 
-The current CLI interface (`--owner`, `--repo`, `--number`) is inconsistent with GitHub's standard `OWNER/REPO` format used across GitHub CLI, documentation, and URLs. The tool already depends on `gh` CLI for authentication via `gh auth token`, so extending this dependency for repository detection is natural and consistent.
+The current CLI (`--owner`, `--repo`, `--number`) is inconsistent with GitHub's standard `OWNER/REPO` format used across GitHub CLI, documentation, and URLs. The tool already depends on `gh` CLI for authentication via `gh auth token`, so extending this dependency for repository detection is natural and consistent.
 
 Current implementation in `src/cli.rs` uses clap derive API with separate `owner` and `repo` fields, both marked as required. The `--number` flag is also a required argument. Validation functions ensure non-empty strings and positive numbers.
 
@@ -13,7 +13,7 @@ Current implementation in `src/cli.rs` uses clap derive API with separate `owner
 ## Goals / Non-Goals
 
 **Goals:**
-- Simplify CLI interface to match GitHub's `OWNER/REPO` convention
+- Simplify CLI to match GitHub's `OWNER/REPO` convention
 - Reduce typing for users working within Git repositories
 - Provide short form `-o` for frequently used `--output` flag
 - Maintain clear error messages when repository cannot be auto-detected

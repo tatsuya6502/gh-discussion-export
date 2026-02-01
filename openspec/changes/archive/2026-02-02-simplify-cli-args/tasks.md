@@ -43,12 +43,12 @@
 
 ## 6. Integration Tests
 
-- [x] 6.1 Update existing integration tests to use new argument structure
-- [x] 6.2 Add integration test for automatic repo detection in Git repository
-- [x] 6.3 Add integration test for error when outside Git repository without `--repo`
-- [x] 6.4 Add integration test for `gh` command not available scenario
+**Note**: No integration tests exist in the codebase (no `tests/` directory). All functionality is tested via unit tests with `MockCommandRunner`. These items are marked as N/A.
 
-**Note**: No integration tests exist in the codebase, so these tasks are marked as complete (not applicable).
+- N/A 6.1 Update existing integration tests to use new argument structure
+- N/A 6.2 Add integration test for automatic repo detection in Git repository
+- N/A 6.3 Add integration test for error when outside Git repository without `--repo`
+- N/A 6.4 Add integration test for `gh` command not available scenario
 
 ## 7. Documentation Updates
 

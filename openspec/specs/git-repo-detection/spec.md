@@ -15,7 +15,7 @@ The system SHALL automatically detect GitHub repository owner and name from the 
 - **AND** system uses the repository detected by `gh` CLI
 
 #### Scenario: Outside Git repository
-- **WHEN** user omits `--repo` argument while outside of any Git repository
+- **WHEN** user omits `--repo` argument while outside any Git repository
 - **THEN** system displays error message: "not a git repository (or any of the parent directories): .git"
 - **AND** system suggests specifying `--repo` explicitly
 - **AND** system exits with non-zero status
