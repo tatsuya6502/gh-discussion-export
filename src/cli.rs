@@ -61,8 +61,9 @@ impl CliArgs {
         let repo_without_git = repo_str.strip_suffix(".git").unwrap_or(&repo_str);
         let parts: Vec<&str> = repo_without_git.split('/').collect();
 
-        if parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() {
-            Ok((parts[0].to_string(), parts[1].to_string()))
+        // Validate both parts are non-empty (after trimming whitespace)
+        if parts.len() == 2 && !parts[0].trim().is_empty() && !parts[1].trim().is_empty() {
+            Ok((parts[0].trim().to_string(), parts[1].trim().to_string()))
         } else {
             Err(Error::InvalidArgs(
                 "Repository must be in OWNER/REPO format".to_string(),
@@ -103,10 +104,14 @@ impl CliArgs {
         // Check if command failed
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(Error::InvalidArgs(format!(
-                "{}. Specify --repo explicitly.",
-                stderr.trim()
-            )));
+            let stderr = stderr.trim();
+            // Avoid double periods if stderr already ends with one
+            let message = if stderr.ends_with('.') {
+                format!("{} Specify --repo explicitly.", stderr)
+            } else {
+                format!("{}. Specify --repo explicitly.", stderr)
+            };
+            return Err(Error::InvalidArgs(message));
         }
 
         // Parse stdout
@@ -392,6 +397,42 @@ mod tests {
         assert_eq!(name, "repo");
     }
 
+    #[test]
+    fn test_repo_components_whitespace_only_parts() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("  /  "),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
+    #[test]
+    fn test_repo_components_whitespace_owner() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("  /repo"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
+    #[test]
+    fn test_repo_components_whitespace_name() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("owner/  "),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
     // Helper to create exit status for testing (cross-platform)
     #[cfg(unix)]
     fn exit_status(code: i32) -> std::process::ExitStatus {
@@ -480,6 +521,28 @@ mod tests {
         assert!(result.is_err());
         if let Err(Error::InvalidArgs(msg)) = result {
             assert!(msg.contains("not a git repository"));
+            assert!(msg.contains("Specify --repo explicitly"));
+        } else {
+            panic!("Expected Error::InvalidArgs");
+        }
+    }
+
+    #[test]
+    fn test_detect_from_git_command_failure_with_trailing_period() {
+        use crate::command_runner::MockCommandRunner;
+
+        let mut mock = MockCommandRunner::new();
+        mock.expect_run()
+            .times(1)
+            .returning(|_, _| Ok(mock_failure_output("not a git repository.")));
+
+        let result = CliArgs::detect_from_git_with_runner(&mock);
+        assert!(result.is_err());
+        if let Err(Error::InvalidArgs(msg)) = result {
+            // Should not have double period
+            assert!(!msg.contains(".."));
+            assert!(msg.contains("not a git repository."));
+            assert!(msg.contains("Specify --repo explicitly"));
         } else {
             panic!("Expected Error::InvalidArgs");
         }
