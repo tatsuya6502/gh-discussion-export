@@ -89,11 +89,23 @@ The README.md must include the following sections with specific content:
 - Links to or summarizes CONTRIBUTING.md
 - Explains development setup (clone, build, test)
 
+**Architecture Section:**
+- Explains how the tool works (GraphQL API, cursor-based pagination, Markdown formatting)
+- Describes OpenSpec-driven development methodology
+- Links to specification at `openspec/specs`
+- Lists module organization based on specifications
+
 **License Information:**
 - Specifies the license (MIT)
 - Includes copyright notice if applicable
 
-**Rationale:** These content requirements ensure the README is comprehensive and user-friendly, addressing common questions upfront and reducing support burden.
+**CONTRIBUTING.md Content:**
+- Development setup instructions (including OpenSpec CLI)
+- OpenSpec-Driven Development explanation
+- AI-Generated Code policy
+- Testing, code style, and workflow guidelines
+
+**Rationale:** These content requirements ensure the README is comprehensive and user-friendly, addressing common questions upfront and reducing support burden. The Architecture section provides transparency about the tool's internal workings and development approach, while CONTRIBUTING.md sets clear expectations for contributors.
 
 ## Risks / Trade-offs
 
