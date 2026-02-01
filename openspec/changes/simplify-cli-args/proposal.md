@@ -26,6 +26,6 @@ Current CLI requires separate `--owner` and `--repo` flags, making the command v
 
 - **Affected code**: `src/cli.rs` (complete rewrite of argument structure), `src/main.rs` (integration changes)
 - **Dependencies**: No new dependencies (reuses existing `gh` CLI for repo detection)
-- **Breaking changes**: Existing scripts/calls using `--owner` and `--repo` flags will need to be updated to new format
-- **Tests**: All CLI parsing tests will need to be updated to reflect new argument structure
-- **Documentation**: README, usage examples, and help text will need updates
+- **Breaking changes**: Breaking change acceptable as this is pre-1.0 software with only the developer as current user
+- **Tests**: All CLI parsing tests updated to reflect new argument structure, plus new tests for repository detection using MockCommandRunner
+- **Documentation**: README updated with new usage examples (migration guide removed as unnecessary)

@@ -43,22 +43,21 @@ cargo install --path .
 ### Basic Command Syntax
 
 ```bash
-gh-discussion-export --owner <OWNER> --repo <REPO> --number <NUMBER> [--output <PATH>]
+gh-discussion-export [--repo <OWNER/REPO>] [--output <PATH>] <NUMBER>
 ```
 
-### Required Arguments
+### Positional Argument
 
 | Argument | Description |
 |:-------- |:----------- |
-| `--owner` | Repository owner (user or organization) |
-| `--repo` | Repository name |
-| `--number` | Discussion number |
+| `<NUMBER>` | Discussion number (required, first positional argument) |
 
 ### Optional Arguments
 
 | Argument | Description | Default |
 |:-------- |:----------- |:------- |
-| `--output` | Output file path | `<number>-discussion.md` |
+| `--repo <OWNER/REPO>` | GitHub repository in OWNER/REPO format | Auto-detected from Git repository |
+| `-o <PATH>, --output <PATH>` | Output file path | `<number>-discussion.md` |
 
 ### Help
 
@@ -66,27 +65,42 @@ gh-discussion-export --owner <OWNER> --repo <REPO> --number <NUMBER> [--output <
 gh-discussion-export --help
 ```
 
+## Automatic Repository Detection
+
+When you omit the `--repo` argument, the tool automatically detects the repository from your current Git directory using the GitHub CLI:
+
+```bash
+# Inside a Git repository
+gh-discussion-export 123
+```
+
+This is equivalent to:
+
+```bash
+gh-discussion-export --repo $(gh repo view --json owner,name --jq '.owner.login + "/" + .name') 123
+```
+
 ## Examples
 
 ### Export a discussion from a public repository
 
 ```bash
-gh-discussion-export \
-  --owner rust-lang \
-  --repo rust \
-  --number 12345
+gh-discussion-export --repo rust-lang/rust 12345
 ```
 
 This creates a file named `12345-discussion.md` in the current directory.
 
+### Export with automatic repository detection
+
+```bash
+# Inside your Git repository
+gh-discussion-export 993
+```
+
 ### Export with custom output path
 
 ```bash
-gh-discussion-export \
-  --owner cli \
-  --repo cli \
-  --number 993 \
-  --output my-discussion-archive.md
+gh-discussion-export --repo cli/cli 993 -o my-discussion-archive.md
 ```
 
 ## Output Format

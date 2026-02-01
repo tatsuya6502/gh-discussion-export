@@ -9,8 +9,20 @@ fn main() {
     let args = CliArgs::parse();
 
     // Extract owner, repo, number from arguments
-    let owner = &args.owner;
-    let repo = &args.repo;
+    let owner = match args.repo_owner() {
+        Ok(owner) => owner,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
+    };
+    let repo = match args.repo_name() {
+        Ok(repo) => repo,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            std::process::exit(1);
+        }
+    };
     let number = args.number;
 
     // Determine output path (use arg value or default to `<number>-discussion.md`)
@@ -36,7 +48,7 @@ fn main() {
     let client = gh_discussion_export::client::GitHubClient::new(http_client);
 
     // Fetch discussion
-    let discussion = match fetch_discussion(&client, owner, repo, number) {
+    let discussion = match fetch_discussion(&client, &owner, &repo, number) {
         Ok(discussion) => discussion,
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -45,7 +57,7 @@ fn main() {
     };
 
     // Generate Markdown output
-    let markdown = format_discussion(&discussion, owner, repo);
+    let markdown = format_discussion(&discussion, &owner, &repo);
 
     // Write output file
     match write_output(&markdown, &output_path) {

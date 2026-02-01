@@ -54,14 +54,9 @@ The system SHALL validate that arguments match expected types.
 ### Requirement: Parse command-line arguments (legacy structure)
 **Reason**: Replaced by unified `--repo <OWNER/REPO>` format and positional argument for discussion number
 
-**Migration**:
-- Replace `--owner <owner> --repo <repo>` with `--repo <owner/repo>`
-- Replace `--number <n>` flag with positional argument `<n>`
-- Update scripts to use new argument structure
+**Note**: This is a breaking change to pre-1.0 software. The only current user is the developer, so no migration documentation is needed.
 
 ### Requirement: Validate argument types (legacy --number flag)
 **Reason**: Discussion number is now a positional argument instead of a flag
 
-**Migration**:
-- Move `--number` value to first positional argument
-- Example: `--owner rust-lang --repo rust --number 123` → `--repo rust-lang/rust 123`
+**Note**: Validation logic preserved, now applied to positional argument instead of flag.

@@ -127,40 +127,20 @@ impl CliArgs {
 
 ## Migration Plan
 
-### For users upgrading from previous version
-
-1. Update command invocation:
-   ```bash
-   # Old
-   gh-discussion-export --owner rust-lang --repo rust --number 123
-
-   # New
-   gh-discussion-export --repo rust-lang/rust 123
-   ```
-
-2. For Git repositories, omit `--repo`:
-   ```bash
-   # Inside git clone of rust-lang/rust
-   gh-discussion-export 123
-   ```
-
-3. Update CI/CD scripts:
-   - Replace `--owner`/`--repo` with `--repo OWNER/REPO`
-   - Move `--number` value to positional argument
-   - Or run inside Git repository and omit `--repo` entirely
+**Note**: This tool is currently in pre-1.0 development with only the developer as a user. No migration documentation is needed for external users.
 
 ### Rollback strategy
 
 If critical issues are found:
 1. Revert to previous CLI structure
-2. Users can continue using old syntax
+2. Developer can update their local usage
 3. Auto-detection feature removed
 
 ### Testing strategy
 
 - Unit tests for argument parsing (valid/invalid repo formats)
 - Unit tests for `OWNER/REPO` parsing logic
-- Integration tests for `gh repo view` invocation (mockable or real)
+- Unit tests for `gh repo view` invocation using MockCommandRunner (no external dependencies)
 - Update all existing CLI tests to use new argument structure
 
 ## Open Questions
