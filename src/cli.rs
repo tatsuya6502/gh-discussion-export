@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use clap::Parser;
 
 use crate::command_runner::CommandRunner;
@@ -105,12 +107,15 @@ impl CliArgs {
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             let stderr = stderr.trim();
-            // Avoid double periods if stderr already ends with one
-            let message = if stderr.ends_with('.') {
-                format!("{} Specify --repo explicitly.", stderr)
+            // Build base message, handling empty stderr and trailing period
+            let base_message: Cow<str> = if stderr.is_empty() {
+                "Failed to detect repository".into()
+            } else if stderr.ends_with('.') {
+                stderr.into()
             } else {
-                format!("{}. Specify --repo explicitly.", stderr)
+                format!("{stderr}.").into()
             };
+            let message = format!("{} Specify --repo explicitly.", base_message);
             return Err(Error::InvalidArgs(message));
         }
 
@@ -542,6 +547,27 @@ mod tests {
             // Should not have double period
             assert!(!msg.contains(".."));
             assert!(msg.contains("not a git repository."));
+            assert!(msg.contains("Specify --repo explicitly"));
+        } else {
+            panic!("Expected Error::InvalidArgs");
+        }
+    }
+
+    #[test]
+    fn test_detect_from_git_command_failure_with_empty_stderr() {
+        use crate::command_runner::MockCommandRunner;
+
+        let mut mock = MockCommandRunner::new();
+        mock.expect_run()
+            .times(1)
+            .returning(|_, _| Ok(mock_failure_output("")));
+
+        let result = CliArgs::detect_from_git_with_runner(&mock);
+        assert!(result.is_err());
+        if let Err(Error::InvalidArgs(msg)) = result {
+            // Should not start with a period
+            assert!(!msg.starts_with('.'));
+            assert!(msg.contains("Failed to detect repository"));
             assert!(msg.contains("Specify --repo explicitly"));
         } else {
             panic!("Expected Error::InvalidArgs");
