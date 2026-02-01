@@ -53,7 +53,7 @@ impl CliArgs {
     /// as it only calls `gh repo view` once instead of twice.
     pub fn repo_components(&self) -> Result<(String, String)> {
         let repo_str = match &self.repo {
-            Some(repo) => repo.clone(),
+            Some(repo) => repo.trim().to_string(),
             None => Self::detect_from_git_with_runner(&crate::command_runner::StdCommandRunner)?,
         };
 
@@ -376,6 +376,20 @@ mod tests {
         let (owner, name) = cli.repo_components().unwrap();
         assert_eq!(owner, "rust-lang");
         assert_eq!(name, "rust");
+    }
+
+    #[test]
+    fn test_repo_components_trims_whitespace() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("  owner/repo  "),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        let (owner, name) = cli.repo_components().unwrap();
+        assert_eq!(owner, "owner");
+        assert_eq!(name, "repo");
     }
 
     // Helper to create exit status for testing (cross-platform)
