@@ -75,13 +75,17 @@ _author: username (2024-01-15T10:30:00Z)
 
 ## Comments
 
+
 ### Comment 1
-_author: username (2024-01-15T11:00:00Z)
+
+_author: username (2024-01-15T11:00:00Z)_
 
 <comment body>
 
+
 #### Reply 1.1
-_author: username (2024-01-15T11:30:00Z)
+
+_author: username (2024-01-15T11:30:00Z)_
 
 <reply body>
 
