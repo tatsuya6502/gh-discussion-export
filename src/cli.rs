@@ -3,13 +3,21 @@ use clap::Parser;
 use crate::command_runner::CommandRunner;
 use crate::error::{Error, Result};
 
+/// Custom validator to ensure discussion number is positive (>= 1)
+fn validate_positive_number(s: &str) -> std::result::Result<u64, String> {
+    match s.parse::<u64>() {
+        Ok(num) if num > 0 => Ok(num),
+        _ => Err("Discussion number must be greater than zero.".to_string()),
+    }
+}
+
 /// Command-line arguments for GitHub Discussion Export
 #[derive(Parser, Debug)]
 #[command(name = "gh-discussion-export")]
 #[command(about = "Export GitHub Discussion to Markdown", version = "0.1.0")]
 pub struct CliArgs {
     /// Discussion number
-    #[arg(value_name = "NUMBER", help = "Discussion number")]
+    #[arg(value_name = "NUMBER", help = "Discussion number", value_parser = validate_positive_number)]
     pub number: u64,
 
     /// GitHub repository in OWNER/REPO format (auto-detected from Git repository if omitted)
@@ -39,8 +47,11 @@ impl CliArgs {
         }
     }
 
-    /// Get the repository owner from explicit --repo flag or auto-detect from Git
-    pub fn repo_owner(&self) -> Result<String> {
+    /// Get both repository owner and name, avoiding duplicate `gh repo view` calls.
+    ///
+    /// This method should be preferred when you need both owner and name,
+    /// as it only calls `gh repo view` once instead of twice.
+    pub fn repo_components(&self) -> Result<(String, String)> {
         let repo_str = match &self.repo {
             Some(repo) => repo.clone(),
             None => Self::detect_from_git_with_runner(&crate::command_runner::StdCommandRunner)?,
@@ -50,8 +61,8 @@ impl CliArgs {
         let repo_without_git = repo_str.strip_suffix(".git").unwrap_or(&repo_str);
         let parts: Vec<&str> = repo_without_git.split('/').collect();
 
-        if parts.len() == 2 {
-            Ok(parts[0].to_string())
+        if parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() {
+            Ok((parts[0].to_string(), parts[1].to_string()))
         } else {
             Err(Error::InvalidArgs(
                 "Repository must be in OWNER/REPO format".to_string(),
@@ -59,24 +70,16 @@ impl CliArgs {
         }
     }
 
+    /// Get the repository owner from explicit --repo flag or auto-detect from Git
+    pub fn repo_owner(&self) -> Result<String> {
+        let (owner, _) = self.repo_components()?;
+        Ok(owner)
+    }
+
     /// Get the repository name from explicit --repo flag or auto-detect from Git
     pub fn repo_name(&self) -> Result<String> {
-        let repo_str = match &self.repo {
-            Some(repo) => repo.clone(),
-            None => Self::detect_from_git_with_runner(&crate::command_runner::StdCommandRunner)?,
-        };
-
-        // Parse OWNER/REPO format
-        let repo_without_git = repo_str.strip_suffix(".git").unwrap_or(&repo_str);
-        let parts: Vec<&str> = repo_without_git.split('/').collect();
-
-        if parts.len() == 2 {
-            Ok(parts[1].to_string())
-        } else {
-            Err(Error::InvalidArgs(
-                "Repository must be in OWNER/REPO format".to_string(),
-            ))
-        }
+        let (_, name) = self.repo_components()?;
+        Ok(name)
     }
 
     /// Detect repository from current Git directory using gh CLI with a custom command runner.
@@ -317,6 +320,62 @@ mod tests {
         ];
         let cli = CliArgs::try_parse_from(args).unwrap();
         assert!(cli.repo_name().is_err());
+    }
+
+    #[test]
+    fn test_parse_zero_number() {
+        let args = vec![OsString::from("gh-discussion-export"), OsString::from("0")];
+        assert!(CliArgs::try_parse_from(args).is_err());
+    }
+
+    #[test]
+    fn test_repo_components_empty_owner() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("/repo"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
+    #[test]
+    fn test_repo_components_empty_name() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("owner/"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
+    #[test]
+    fn test_repo_components_both_empty() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("/"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.repo_components().is_err());
+    }
+
+    #[test]
+    fn test_repo_components_with_explicit_repo() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--repo"),
+            OsString::from("rust-lang/rust"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        let (owner, name) = cli.repo_components().unwrap();
+        assert_eq!(owner, "rust-lang");
+        assert_eq!(name, "rust");
     }
 
     // Helper to create exit status for testing (cross-platform)

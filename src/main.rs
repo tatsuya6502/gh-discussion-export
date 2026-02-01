@@ -9,15 +9,8 @@ fn main() {
     let args = CliArgs::parse();
 
     // Extract owner, repo, number from arguments
-    let owner = match args.repo_owner() {
-        Ok(owner) => owner,
-        Err(e) => {
-            eprintln!("Error: {}", e);
-            std::process::exit(1);
-        }
-    };
-    let repo = match args.repo_name() {
-        Ok(repo) => repo,
+    let (owner, repo) = match args.repo_components() {
+        Ok(components) => components,
         Err(e) => {
             eprintln!("Error: {}", e);
             std::process::exit(1);
