@@ -142,7 +142,7 @@ When working on pull requests, use this command to view unresolved review commen
 
 ```bash
 # Get unresolved review comments for a PR
-gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR番号> --unresolved
+gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR_NUMBER> --unresolved
 ```
 
 This requires the `gh pr-review` extension to be installed.
