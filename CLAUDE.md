@@ -136,3 +136,15 @@ All commands must pass before committing changes. This ensures:
 - Code is properly formatted
 - All tests pass
 
+## PR Review Workflow
+
+When working on pull requests, use this command to view unresolved review comments:
+
+```bash
+# Get unresolved review comments for a PR
+gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR番号> --unresolved
+```
+
+This requires the `gh pr-review` extension to be installed.
+
+
