@@ -44,10 +44,10 @@ fn escape_headings(body: &str) -> String {
 
 /// Normalize CRLF line endings to LF
 ///
-/// Replaces \r\n with \n to ensure consistent LF line endings
-/// in the output file.
+/// Replaces \r\n with \n, then replaces any remaining lone \r with \n
+/// to ensure pure LF line endings in the output file.
 fn normalize_crlf(body: &str) -> String {
-    body.replace("\r\n", "\n")
+    body.replace("\r\n", "\n").replace('\r', "\n")
 }
 
 /// Process body content for output
@@ -114,9 +114,10 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
     let mut output = String::from("## Comments\n");
 
     if let Some(ref comments) = discussion.comments.nodes {
-        for (idx, comment_opt) in comments.iter().enumerate() {
+        let mut comment_num = 0;
+        for comment_opt in comments.iter() {
             if let Some(comment) = comment_opt {
-                let comment_num = idx + 1;
+                comment_num += 1;
                 let author = get_author_login(comment.author.as_ref());
                 let body = process_body(&comment.body);
 
@@ -127,9 +128,10 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 
                 // Add replies if present
                 if let Some(ref replies) = comment.replies.nodes {
-                    for (reply_idx, reply_opt) in replies.iter().enumerate() {
+                    let mut reply_num = 0;
+                    for reply_opt in replies.iter() {
                         if let Some(reply) = reply_opt {
-                            let reply_num = reply_idx + 1;
+                            reply_num += 1;
                             let reply_author = get_author_login(reply.author.as_ref());
                             let reply_body = process_body(&reply.body);
 
@@ -328,6 +330,15 @@ mod tests {
     }
 
     #[test]
+    fn test_lone_cr_normalization() {
+        let input = "Line 1\rLine 2\r\nLine 3\rLine 4";
+        let normalized = normalize_crlf(input);
+
+        assert_eq!(normalized, "Line 1\nLine 2\nLine 3\nLine 4");
+        assert!(!normalized.contains('\r'));
+    }
+
+    #[test]
     fn test_process_body_verbatim_with_heading_escape() {
         let input = "# Heading in body\nRegular text\n## Another heading";
         let processed = process_body(input);
@@ -521,5 +532,86 @@ mod tests {
         assert!(formatted.contains("#### Reply 1.1"));
         assert!(formatted.contains("_author: <deleted>"));
         assert!(formatted.contains("Reply from deleted user"));
+    }
+
+    #[test]
+    fn test_comment_numbering_with_none_entries() {
+        let mut discussion = make_discussion();
+        let comment1 = make_comment(Some("user1"), "Comment 1");
+        let comment2 = make_comment(Some("user2"), "Comment 2");
+        let comment3 = make_comment(Some("user3"), "Comment 3");
+
+        // Create comments with None entries interspersed
+        discussion.comments.nodes = Some(vec![
+            Some(comment1),
+            None, // Deleted/missing comment
+            Some(comment2),
+            None, // Another missing comment
+            Some(comment3),
+        ]);
+
+        let formatted = format_discussion(&discussion, "owner", "repo");
+
+        // Should number sequentially: Comment 1, Comment 2, Comment 3
+        assert!(formatted.contains("### Comment 1"));
+        assert!(formatted.contains("Comment 1"));
+        assert!(formatted.contains("### Comment 2"));
+        assert!(formatted.contains("Comment 2"));
+        assert!(formatted.contains("### Comment 3"));
+        assert!(formatted.contains("Comment 3"));
+
+        // Should not contain Comment 4 or Comment 5 (only 3 actual comments)
+        assert!(!formatted.contains("### Comment 4"));
+        assert!(!formatted.contains("### Comment 5"));
+    }
+
+    #[test]
+    fn test_reply_numbering_with_none_entries() {
+        let mut discussion = make_discussion();
+        let mut comment1 = make_comment(Some("user1"), "Comment 1");
+
+        let reply1 = Reply {
+            id: "reply_1".to_string(),
+            database_id: 1,
+            author: Some(Author {
+                login: Some("replier1".to_string()),
+            }),
+            created_at: DateTime::parse_from_rfc3339("2024-01-15T12:00:00Z")
+                .unwrap()
+                .with_timezone(&Utc),
+            body: "Reply 1".to_string(),
+        };
+
+        let reply2 = Reply {
+            id: "reply_2".to_string(),
+            database_id: 2,
+            author: Some(Author {
+                login: Some("replier2".to_string()),
+            }),
+            created_at: DateTime::parse_from_rfc3339("2024-01-15T12:30:00Z")
+                .unwrap()
+                .with_timezone(&Utc),
+            body: "Reply 2".to_string(),
+        };
+
+        // Create replies with None entries interspersed
+        comment1.replies.nodes = Some(vec![
+            Some(reply1),
+            None, // Deleted/missing reply
+            Some(reply2),
+        ]);
+
+        discussion.comments.nodes = Some(vec![Some(comment1)]);
+
+        let formatted = format_discussion(&discussion, "owner", "repo");
+
+        // Should number sequentially: Reply 1.1, Reply 1.2
+        assert!(formatted.contains("#### Reply 1.1"));
+        assert!(formatted.contains("Reply 1"));
+        assert!(formatted.contains("#### Reply 1.2"));
+        assert!(formatted.contains("Reply 2"));
+
+        // Should not contain Reply 1.3 (only 2 actual replies)
+        assert!(!formatted.contains("#### Reply 1.3"));
     }
 }
