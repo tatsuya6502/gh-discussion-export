@@ -151,8 +151,8 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 
 /// Format complete discussion as Markdown
 ///
-/// Concatenates header, original post, and comments sections with
-/// proper spacing between sections.
+/// Concatenates header, original post, and comments sections.
+/// Each section already includes proper trailing newlines.
 ///
 /// Returns complete Markdown String ready for file output.
 pub(crate) fn format_discussion(discussion: &Discussion, owner: &str, repo: &str) -> String {
@@ -160,7 +160,7 @@ pub(crate) fn format_discussion(discussion: &Discussion, owner: &str, repo: &str
     let original_post = generate_original_post(discussion);
     let comments = generate_comments(discussion);
 
-    format!("{}\n{}\n{}", header, original_post, comments)
+    format!("{}{}{}", header, original_post, comments)
 }
 
 /// Write Markdown content to file
@@ -209,20 +209,6 @@ mod tests {
                 nodes: Some(vec![]),
                 page_info: Default::default(),
             },
-        }
-    }
-
-    fn make_reply(login: Option<&str>, body: &str) -> Reply {
-        Reply {
-            id: "reply_id".to_string(),
-            database_id: 2,
-            author: login.map(|l| Author {
-                login: Some(l.to_string()),
-            }),
-            created_at: DateTime::parse_from_rfc3339("2024-01-15T12:00:00Z")
-                .unwrap()
-                .with_timezone(&Utc),
-            body: body.to_string(),
         }
     }
 
