@@ -109,7 +109,7 @@ impl CliArgs {
             let stderr = stderr.trim();
             // Build base message, handling empty stderr and trailing period
             let base_message: Cow<str> = if stderr.is_empty() {
-                "Failed to detect repository".into()
+                "Failed to detect repository.".into()
             } else if stderr.ends_with('.') {
                 stderr.into()
             } else {
