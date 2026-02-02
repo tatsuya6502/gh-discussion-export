@@ -19,7 +19,7 @@ The system SHALL parse command-line arguments using clap derive macros with the 
 - **THEN** system displays error message indicating discussion number is required and exits with non-zero status
 
 #### Scenario: Missing repo outside Git repository
-- **WHEN** user provides discussion number but omits `--repo` outside of a Git repository
+- **WHEN** user provides discussion number but omits `--repo` outside a Git repository
 - **THEN** system displays error message indicating --repo is required and exits with non-zero status
 
 #### Scenario: Output path omitted
