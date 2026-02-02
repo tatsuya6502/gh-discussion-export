@@ -27,18 +27,12 @@ The system SHALL automatically detect GitHub repository owner and name from the 
 - **AND** system exits with non-zero status
 
 ### Requirement: Parse gh repo view output
-The system SHALL parse the JSON output from `gh repo view` command to extract owner and repository name.
+The system SHALL parse the `OWNER/REPO` string output from `gh repo view --json owner,name --jq '.owner.login + "/" + .name'` to extract owner and repository name.
 
-#### Scenario: Valid JSON output
-- **WHEN** `gh repo view` returns `{"owner":{"login":"tatsuya6502"},"name":"gh-discussion-export"}`
-- **THEN** system extracts owner="tatsuya6502" and repo="gh-discussion-export"
-- **AND** system combines them into "tatsuya6502/gh-discussion-export" format
-
-#### Scenario: Invalid JSON output
-- **WHEN** `gh repo view` returns malformed or unexpected JSON
-- **THEN** system displays error message indicating failed to parse repository information
-- **AND** system suggests specifying `--repo` explicitly
-- **AND** system exits with non-zero status
+#### Scenario: Valid output
+- **WHEN** `gh repo view` outputs `tatsuya6502/gh-discussion-export`
+- **THEN** system splits into owner="tatsuya6502" and repo="gh-discussion-export"
+- **AND** system uses them for the GitHub API call
 
 #### Scenario: gh command not available
 - **WHEN** `gh` command is not installed or not in PATH
