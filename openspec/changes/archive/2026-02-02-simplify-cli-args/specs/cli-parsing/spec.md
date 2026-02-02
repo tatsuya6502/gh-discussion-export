@@ -1,4 +1,4 @@
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Parse command-line arguments
 The system SHALL parse command-line arguments using clap derive macros with the following structure:
@@ -48,3 +48,15 @@ The system SHALL validate that arguments match expected types.
 #### Scenario: Empty string arguments
 - **WHEN** user provides empty string for `--repo` argument
 - **THEN** system displays error message and exits with non-zero status
+
+## REMOVED Requirements
+
+### Requirement: Parse command-line arguments (legacy structure)
+**Reason**: Replaced by unified `--repo <OWNER/REPO>` format and positional argument for discussion number
+
+**Note**: This is a breaking change to pre-1.0 software. The only current user is the developer, so no migration documentation is needed.
+
+### Requirement: Validate argument types (legacy --number flag)
+**Reason**: Discussion number is now a positional argument instead of a flag
+
+**Note**: Validation logic preserved, now applied to positional argument instead of flag.
