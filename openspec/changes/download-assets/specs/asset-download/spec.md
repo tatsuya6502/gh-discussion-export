@@ -16,8 +16,8 @@ The system SHALL extract all GitHub asset URLs matching the pattern `github.com/
 
 #### Scenario: Extract image from Markdown syntax
 
-- **WHEN** reply contains `![Diagram](https://github.com/user-attachments/assets/abc123)`
-- **THEN** system extracts URL `https://github.com/user-attachments/assets/abc123`
+- **WHEN** reply contains `![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7)`
+- **THEN** system extracts URL `https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7`
 
 #### Scenario: No assets in discussion
 
