@@ -1,10 +1,10 @@
-# GitHub Discussion Export - Context for AI Reviewers
+# GitHub Discussion Export - Context for AI Agents
 
 ## Project Overview
 
 This is a **specification-first** Rust CLI tool built using the OpenSpec workflow. The implementation is organized into sequential changes, each with complete artifacts (proposal, design, specs, tasks).
 
-**Current version:** v0.1.0 (release candidate)
+See **CHANGELOG.md** for version history and release information.
 
 ## The Original Specification
 
@@ -155,7 +155,7 @@ The AI assistant should:
 - Make code changes as requested
 - Run verification commands (cargo check, clippy, fmt, test)
 - Provide summaries of changes
-- **NOT** execute git commit or git push commands
+- **NOT** execute git commit or git push commands unless explicitly requested by user
 
 ## PR Review Workflow
 
