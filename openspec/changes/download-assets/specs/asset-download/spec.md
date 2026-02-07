@@ -14,7 +14,7 @@ The system SHALL extract all GitHub asset URLs matching the pattern `github.com/
 - **WHEN** comment contains three `<img>` tags with GitHub asset URLs
 - **THEN** system extracts all three URLs
 
-#### Scenario: Extract image from markdown syntax
+#### Scenario: Extract image from Markdown syntax
 
 - **WHEN** reply contains `![Diagram](https://github.com/user-attachments/assets/abc123)`
 - **THEN** system extracts URL `https://github.com/user-attachments/assets/abc123`

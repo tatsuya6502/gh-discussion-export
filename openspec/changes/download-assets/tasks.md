@@ -15,13 +15,12 @@
 
 ## 3. CLI Argument Extensions
 
-- [ ] 3.1 Add `assets: bool` field to `CliArgs` struct with `default_value = "true"`
-- [ ] 3.2 Add `no_assets: bool` field to `CliArgs` struct with `action = ArgAction::SetTrue`
-- [ ] 3.3 Add `parallel: usize` field to `CliArgs` struct with `default_value = "4"` and short flag `-j`
-- [ ] 3.4 Add helper method `CliArgs::should_download_assets(&self) -> bool` that returns `!self.no_assets`
-- [ ] 3.5 Add helper method `CliArgs::asset_dir_name(&self) -> String` that returns `<number>-discussion-assets`
-- [ ] 3.6 Write CLI argument parsing tests for new flags (positive and negative cases)
-- [ ] 3.7 Run `cargo test` to verify CLI tests pass
+- [ ] 3.1 Add `no_assets: bool` field to `CliArgs` struct with `action = ArgAction::SetTrue`
+- [ ] 3.2 Add `parallel: usize` field to `CliArgs` struct with `default_value = "4"` and short flag `-j`
+- [ ] 3.3 Add helper method `CliArgs::should_download_assets(&self) -> bool` that returns `!self.no_assets`
+- [ ] 3.4 Add helper method `CliArgs::asset_dir_name(&self) -> String` that returns `<number>-discussion-assets`
+- [ ] 3.5 Write CLI argument parsing tests for new flags (positive and negative cases)
+- [ ] 3.6 Run `cargo test` to verify CLI tests pass
 
 ## 4. Asset Detection Module
 

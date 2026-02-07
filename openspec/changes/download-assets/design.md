@@ -88,7 +88,7 @@ Currently, `gh-discussion-export` fetches discussion content via GitHub GraphQL 
 - Scales to future multi-discussion support
 
 **Example structure:**
-```
+```text
 1041-discussion.md
 1041-discussion-assets/
   └── 6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png
@@ -168,9 +168,6 @@ stdout().flush().unwrap();
 
 **Implementation**:
 ```rust
-#[arg(long, default_value = "true")]
-pub assets: bool,
-
 #[arg(long, action = ArgAction::SetTrue)]
 pub no_assets: bool,
 ```
@@ -215,10 +212,11 @@ match content_type {
 
 ## Risks / Trade-offs
 
-### Risk 1: Concurrent GraphQL Client Usage
+### Risk 1: Concurrent HTTP Client Usage
 
-**Risk**: The `reqwest::blocking::Client` is not designed for concurrent use across threads.
-**Mitigation**: Use `Arc<Client>` for thread-safe sharing, or create one client per thread. The `reqwest` documentation indicates `Client` is safe to share via `Arc` for blocking requests.
+**Risk**: Sharing `reqwest::blocking::Client` across threads requires proper synchronization patterns.
+
+**Mitigation**: `reqwest::blocking::Client` implements `Send + Sync` and is safe to share via `Arc<Client>`. The client maintains an internal connection pool and handles concurrent requests efficiently. For asset downloads, wrap the existing authenticated client in `Arc` and pass it to worker threads. Ensure timeouts and connection limits are configured when creating the shared client.
 
 ### Risk 2: File System Race Conditions
 
@@ -257,38 +255,16 @@ match content_type {
 
 **Implementation approach:**
 ```rust
-// Option A: Pass token explicitly (simplest)
-pub fn download_assets(
+// Reuse existing authenticated client wrapped in Arc for thread-safe sharing
+pub fn download_assets_parallel(
+    client: Arc<reqwest::blocking::Client>,  // Shared, authenticated client
     token: &str,
     urls: Vec<String>,
     dir: &Path,
     parallel: usize
-) -> Result<Vec<String>> {
-    let client = reqwest::blocking::Client::new();
-    for url in urls {
-        let response = client
-            .get(&url)
-            .bearer_auth(token)  // Use same token as GraphQL API
-            .send()?;
-        // ... save to file
-    }
-}
-
-// Option B: Create authenticated client wrapper
-pub struct AuthenticatedClient {
-    client: reqwest::blocking::Client,
-    token: String,
-}
-
-impl AuthenticatedClient {
-    pub fn download_asset(&self, url: &str) -> Result<Vec<u8>> {
-        Ok(self.client
-            .get(url)
-            .bearer_auth(&self.token)
-            .send()?
-            .bytes()?
-            .to_vec())
-    }
+) -> Vec<Result<String>> {
+    // ... parallel downloads using shared client
+    // Each download uses: client.get(url).bearer_auth(token).send()?
 }
 ```
 

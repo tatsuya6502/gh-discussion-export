@@ -133,7 +133,7 @@ The system SHALL display a summary message after successful export.
 - **AND** 10 assets downloaded
 - **WHEN** export completes
 - **THEN** system displays:
-  ```
+  ```text
   ✓ Exported to: 1041-discussion.md
   ✓ Downloaded 10 assets to: 1041-discussion-assets/
   ```
@@ -152,7 +152,7 @@ The system SHALL display a summary message after successful export.
 - **AND** 8 assets downloaded, 2 failed
 - **WHEN** export completes
 - **THEN** system displays:
-  ```
+  ```text
   ✓ Exported to: 1041-discussion.md
   ✓ Downloaded 8 assets to: 1041-discussion-assets/
   ⚠ Skipped 2 assets (download failed)
@@ -190,9 +190,8 @@ The system SHALL detect when output is not a terminal (e.g., piped to file) and 
 
 - **GIVEN** user runs `gh-discussion-export 1041 > output.log 2>&1`
 - **WHEN** stdout is not a terminal
-- **THEN** system does not display inline progress updates
-- **AND** system only prints final summary messages
-- **OR** system prints each progress message on a new line (not in-place updates)
+- **THEN** system prints each progress message on a new line (no in-place carriage-return updates)
+- **AND** final summary messages are printed normally
 
 #### Scenario: Terminal output
 
