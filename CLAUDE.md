@@ -4,7 +4,7 @@
 
 This is a **specification-first** Rust CLI tool built using the OpenSpec workflow. The implementation is organized into sequential changes, each with complete artifacts (proposal, design, specs, tasks).
 
-**Current version:** v0.1.0 (release candidate)
+See **CHANGELOG.md** for version history and release information.
 
 ## The Original Specification
 
@@ -161,7 +161,7 @@ The AI assistant should:
 
 When creating commits, include `Co-Authored-By` line at the end:
 
-```
+```text
 Co-Authored-By: GLM <noreply@z.ai>
 ```
 
