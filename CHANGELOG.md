@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] &mdash; 2026-02-07
+
 ### Fixed
 - Blank line before `---` separator in original post section to ensure proper rendering in CommonMark-compliant Markdown renderers
 
@@ -41,5 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - None
 
-[Unreleased]: https://github.com/tatsuya6502/gh-discussion-export/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/tatsuya6502/gh-discussion-export/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/tatsuya6502/gh-discussion-export/releases/tag/v0.1.1
 [0.1.0]: https://github.com/tatsuya6502/gh-discussion-export/releases/tag/v0.1.0
