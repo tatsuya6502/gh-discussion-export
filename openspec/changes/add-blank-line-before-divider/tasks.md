@@ -1,13 +1,11 @@
 ## 1. Code Changes
 
-- [ ] 1.1 Update `generate_header()` format string to add blank line before `---` separator
-- [ ] 1.2 Update `generate_original_post()` format string to add blank line before `---` separator
+- [ ] 1.1 Update `generate_original_post()` format string to add blank line before `---` separator
 
 ## 2. Test Updates
 
-- [ ] 2.1 Update `test_generate_header_with_all_fields` to expect blank line before divider
-- [ ] 2.2 Update `test_generate_original_post` to expect blank line before divider
-- [ ] 2.3 Update any other tests affected by the divider format change
+- [ ] 2.1 Update `test_generate_original_post` to expect blank line before divider
+- [ ] 2.2 Update any other tests affected by the divider format change
 
 ## 3. Documentation Updates
 

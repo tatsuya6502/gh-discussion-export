@@ -1,21 +1,5 @@
 ## MODIFIED Requirements
 
-### Requirement: Generate Markdown header
-The system SHALL generate a header section with discussion metadata.
-
-#### Scenario: Header with all fields
-- **WHEN** Markdown output is generated
-- **THEN** header contains `# <Discussion Title>` as first line
-- **AND** header contains `Discussion: <owner>/<repo>#<number>`
-- **AND** header contains `URL: https://github.com/<owner>/<repo>/discussions/<number>`
-- **AND** header contains `Created at: <ISO8601 timestamp>`
-- **AND** header contains `Author: <login>`
-- **AND** blank line precedes `---` separator
-
-#### Scenario: Header with deleted author
-- **WHEN** original post author is `<deleted>`
-- **THEN** header contains `Author: <deleted>`
-
 ### Requirement: Generate original post section
 The system SHALL generate the original post section with author and body.
 

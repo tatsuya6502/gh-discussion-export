@@ -1,10 +1,10 @@
 ## Context
 
-The Markdown output generator currently creates section dividers using `---` immediately after content, without a preceding blank line. This works in some Markdown renderers but causes issues in CommonMark-compliant renderers, where `---` following text is interpreted as a heading underline rather than a horizontal rule.
+The Markdown output generator creates section dividers using `---`. The `generate_original_post()` function places the divider immediately after the body content without a preceding blank line. This works in some Markdown renderers but causes issues in CommonMark-compliant renderers, where `---` following text is interpreted as a heading underline rather than a horizontal rule.
 
 **Current behavior in `src/output.rs`:**
-- `generate_header()` ends with: `"\n---\n"` (line 78)
-- `generate_original_post()` ends with: `"\n---\n"` (line 102)
+- `generate_header()` ends with: `"\n\n---\n"` (line 78) - already has blank line ✓
+- `generate_original_post()` ends with: `"\n---\n"` (line 102) - missing blank line ✗
 
 The problem manifests when the content immediately before `---` contains text - that text becomes the heading text, and `---` becomes the underline.
 
@@ -16,8 +16,8 @@ The problem manifests when the content immediately before `---` contains text - 
 ## Goals / Non-Goals
 
 **Goals:**
-- Ensure `---` dividers render consistently as horizontal rules across all Markdown processors
-- Add blank lines before all `---` separators in generated Markdown
+- Ensure `---` divider in original post section renders consistently as horizontal rule across all Markdown processors
+- Add blank line before `---` separator in `generate_original_post()`
 - Maintain existing test coverage with updated expectations
 
 **Non-Goals:**
@@ -27,22 +27,23 @@ The problem manifests when the content immediately before `---` contains text - 
 
 ## Decisions
 
-### Decision 1: Add blank line before all `---` separators
+### Decision 1: Add blank line before `---` separator in `generate_original_post()`
 
-**Choice:** Modify format strings to include `\n\n` before `---` instead of `\n`
+**Choice:** Modify the format string in `generate_original_post()` to include `\n\n` before `---` instead of `\n`
 
 **Rationale:**
 - CommonMark spec requires blank lines before thematic breaks (`---`) to prevent misinterpretation as setext headings
 - This is the minimal change that ensures correct rendering
 - Aligns with Markdown best practices - thematic breaks should be surrounded by blank lines for clarity
+- `generate_header()` already has the blank line, so only `generate_original_post()` needs the fix
 
 **Code changes:**
 ```rust
-// Before:
-format!("...\n---\n")
+// Before (line 102):
+"## Original Post\n\n_author: {} ({})_\n\n{}\n---\n"
 
 // After:
-format!("...\n\n---\n")
+"## Original Post\n\n_author: {} ({})_\n\n{}\n\n---\n"
 ```
 
 **Alternatives considered:**
@@ -55,15 +56,6 @@ format!("...\n\n---\n")
 3. **Remove dividers entirely**
    - Rejected: Dividers provide visual structure and separation between sections. Removing them would make the output harder to read.
 
-### Decision 2: Modify both `generate_header()` and `generate_original_post()`
-
-**Choice:** Apply the fix to both functions for consistency
-
-**Rationale:**
-- Both functions use the same pattern of ending with `---`
-- Even though the header divider doesn't currently cause issues (last line is "Author: <login>" which doesn't look like heading text), ensuring consistency prevents future issues
-- Makes the code more maintainable - same pattern everywhere
-
 ## Risks / Trade-offs
 
 ### Risk: Test failures due to changed expectations
@@ -73,8 +65,8 @@ format!("...\n\n---\n")
 
 ### Risk: Output file size increase
 
-**Risk:** Adding two blank lines (one per divider) increases file size
-**Impact:** Negligible - 2 additional bytes per discussion
+**Risk:** Adding one blank line increases file size
+**Impact:** Negligible - 1 additional byte per discussion
 **Mitigation:** None needed. This is an acceptable trade-off for correct rendering.
 
 ### Trade-off: Blank line in source readability
@@ -85,8 +77,8 @@ format!("...\n\n---\n")
 ## Migration Plan
 
 **Deployment steps:**
-1. Update `src/output.rs` format strings in `generate_header()` and `generate_original_post()`
-2. Update unit tests in `src/output.rs` to expect blank lines before dividers
+1. Update `src/output.rs` format string in `generate_original_post()`
+2. Update unit tests in `src/output.rs` to expect blank line before divider in original post
 3. Run `cargo test` to verify all tests pass
 4. Run `cargo clippy` and `cargo fmt` to maintain code quality standards
 
