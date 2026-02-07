@@ -1,4 +1,4 @@
-# GitHub Discussion Export - Context for AI Reviewers
+# GitHub Discussion Export - Context for AI Agents
 
 ## Project Overview
 
@@ -155,7 +155,15 @@ The AI assistant should:
 - Make code changes as requested
 - Run verification commands (cargo check, clippy, fmt, test)
 - Provide summaries of changes
-- **NOT** execute git commit or git push commands
+- **NOT** execute git commit or git push commands unless explicitly requested by user
+
+### Commit Messages
+
+When creating commits, include `Co-Authored-By` line at the end:
+
+```
+Co-Authored-By: GLM <noreply@z.ai>
+```
 
 ## PR Review Workflow
 
