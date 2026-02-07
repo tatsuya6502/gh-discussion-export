@@ -16,7 +16,7 @@ fn validate_positive_number(s: &str) -> std::result::Result<u64, String> {
 /// Command-line arguments for GitHub Discussion Export
 #[derive(Parser, Debug)]
 #[command(name = "gh-discussion-export")]
-#[command(about = "Export GitHub Discussion to Markdown", version = "0.1.0")]
+#[command(about = "Export GitHub Discussion to Markdown", version = env!("CARGO_PKG_VERSION"))]
 pub struct CliArgs {
     /// Discussion number
     #[arg(value_name = "NUMBER", help = "Discussion number", value_parser = validate_positive_number)]
