@@ -24,7 +24,7 @@ The system SHALL generate the original post section with author and body.
 - **THEN** section starts with `## Original Post` heading
 - **AND** author line is `_author: <login> (<ISO8601>)_`
 - **AND** body content follows author line
-- **AND** section ends with `---` separator
+- **AND** blank line precedes `---` separator
 
 #### Scenario: Original post with deleted author
 - **WHEN** original post author is `<deleted>`

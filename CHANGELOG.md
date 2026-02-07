@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Blank line before `---` separators to ensure proper rendering in CommonMark-compliant Markdown renderers
+### Fixed
+- Blank line before `---` separator in original post section to ensure proper rendering in CommonMark-compliant Markdown renderers
 
 ## [0.1.0] &mdash; 2026-02-02
 

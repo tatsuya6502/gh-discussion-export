@@ -99,7 +99,7 @@ pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
     let author = get_author_login(discussion.author.as_ref());
     let body = process_body(&discussion.body);
     format!(
-        "## Original Post\n\n_author: {} ({})_\n\n{}\n---\n",
+        "## Original Post\n\n_author: {} ({})_\n\n{}\n\n---\n",
         author,
         discussion
             .created_at
@@ -237,7 +237,7 @@ mod tests {
         assert!(header.contains("URL: https://github.com/owner/repo/discussions/123"));
         assert!(header.contains("Created at: 2024-01-15T10:30:00Z"));
         assert!(header.contains("Author: testuser"));
-        assert!(header.ends_with("---\n"));
+        assert!(header.ends_with("\n\n---\n"));
     }
 
     #[test]
@@ -257,7 +257,7 @@ mod tests {
         assert!(post.contains("## Original Post"));
         assert!(post.contains("_author: testuser (2024-01-15T10:30:00Z)_"));
         assert!(post.contains("This is the original post body."));
-        assert!(post.ends_with("---\n"));
+        assert!(post.ends_with("\n\n---\n"));
     }
 
     #[test]
