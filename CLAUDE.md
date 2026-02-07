@@ -157,14 +157,6 @@ The AI assistant should:
 - Provide summaries of changes
 - **NOT** execute git commit or git push commands unless explicitly requested by user
 
-### Commit Messages
-
-When creating commits, include `Co-Authored-By` line at the end:
-
-```text
-Co-Authored-By: GLM <noreply@z.ai>
-```
-
 ## PR Review Workflow
 
 Use `gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR_NUMBER> --unresolved` to view unresolved review comments.
