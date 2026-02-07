@@ -2,11 +2,13 @@
 
 ## Project Overview
 
-This is a **specification-first** Rust CLI tool built using the OpenSpec workflow. The implementation is organized into 7 sequential changes, each with complete artifacts (proposal, design, specs, tasks).
+This is a **specification-first** Rust CLI tool built using the OpenSpec workflow. The implementation is organized into sequential changes, each with complete artifacts (proposal, design, specs, tasks).
+
+**Current version:** v0.1.0 (release candidate)
 
 ## The Original Specification
 
-The tool is built from a detailed specification originally captured in `specs.md` (not committed). Key requirements from that spec:
+The tool is built from detailed specifications captured in `openspec/specs/`. Each capability has its own spec file with requirements and scenarios. Key requirements:
 
 ### What This Tool Does
 - Fetches **one** GitHub Discussion by number
@@ -90,8 +92,8 @@ src/
 
 ### Test Coverage
 - Unit tests for each module (co-located with implementation)
-- Integration tests in `tests/` directory against real GitHub API
-- Mark heavy tests as `#[ignore]` to avoid rate limits
+- Integration tests in `tests/` directory
+- **CHANGELOG.md** must be updated for user-visible changes
 
 ## OpenSpec Artifacts
 
@@ -102,6 +104,10 @@ Each change in `openspec/changes/<name>/` contains:
 - `tasks.md` - Implementation checklist (checkbox format)
 
 Reviewers can reference these artifacts to understand intent and verify completeness.
+
+## Change History
+
+**CHANGELOG.md** documents all notable changes to the project. Completed changes are archived in `openspec/changes/archive/`.
 
 ## Intended Usage
 
@@ -153,20 +159,6 @@ The AI assistant should:
 
 ## PR Review Workflow
 
-When working on pull requests, use this command to view unresolved review comments:
+Use `gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR_NUMBER> --unresolved` to view unresolved review comments.
 
-```bash
-# Get unresolved review comments for a PR
-gh pr-review review view --repo tatsuya6502/gh-discussion-export --pr <PR_NUMBER> --unresolved
-```
-
-This requires the `gh pr-review` extension to be installed.
-
-<details>
-<summary>📦 Installation instructions</summary>
-
-```bash
-gh extension install agynio/gh-pr-review
-```
-
-</details>
+Requires: `gh extension install agynio/gh-pr-review`
