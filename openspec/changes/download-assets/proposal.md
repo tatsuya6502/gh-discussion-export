@@ -6,8 +6,8 @@ GitHub Discussions often contain images and other assets referenced via `github.
 
 - **Asset detection and extraction**: Parse discussion body, comments, and replies to extract GitHub asset URLs (`github.com/user-attachments/assets/*`)
 - **Parallel asset downloading**: Download discovered assets concurrently with configurable parallelism (default: 4 concurrent downloads)
-- **Local asset storage**: Save assets to `<discussion-number>-discussion-assets/` directory alongside the Markdown output
-- **URL transformation**: Modify Markdown to include local asset paths while preserving original URLs for reference
+- **Local asset storage**: Save assets to `<discussion-number>-discussion-assets/` directory alongside the Markdown output. Asset directory is created only when at least one asset is successfully downloaded. If all downloads fail, no asset directory is created.
+- **URL transformation**: Modify Markdown to include local asset paths while preserving original URLs for reference. When no assets are successfully downloaded, Markdown is left unchanged and no asset directory is created.
 - **CLI options**:
   - `--no-assets`: Flag to disable asset downloading
   - `--parallel <num>` / `-j <num>`: Configure number of parallel downloads (default: 4)
@@ -23,7 +23,7 @@ GitHub Discussions often contain images and other assets referenced via `github.
 
 ### Modified Capabilities
 
-None. This is a new feature that does not modify existing requirement-level behaviors. The core discussion fetching and markdown generation capabilities remain unchanged in their requirements.
+**markdown-output**: Output formatting is modified to include local asset paths and preserved original URLs when assets are successfully downloaded. Core discussion fetching behaviors remain unchanged.
 
 ## Impact
 
