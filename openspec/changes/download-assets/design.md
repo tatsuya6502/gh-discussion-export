@@ -10,7 +10,10 @@ Currently, `gh-discussion-export` fetches discussion content via GitHub GraphQL 
 - `src/models.rs`: Serde models for API responses
 
 **Constraints:**
-- Must preserve lossless fidelity principle (only heading escape is currently permitted)
+- Must preserve lossless fidelity principle with limited exceptions:
+  - Heading escape: Markdown heading syntax (`#`) at line start is escaped with backslash to preserve document structure
+  - Asset URL transformation: When `--no-assets` flag is not set, GitHub asset URLs in body content are transformed to reference local paths while preserving original URLs for reference
+  - All other body content is emitted verbatim
 - Must use GitHub CLI for authentication (no PAT management)
 - Must use blocking `reqwest` client (no `tokio`)
 

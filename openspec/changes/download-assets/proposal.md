@@ -27,7 +27,7 @@ None. This is a new feature that does not modify existing requirement-level beha
 
 ## Impact
 
-- **New dependencies**: `scraper` crate for HTML parsing; `indicatif` crate for progress bars (optional, can use simple print statements)
+- **New dependencies**: `scraper` crate for HTML parsing; `crossbeam` crate for scoped parallelism (optional, can use std::thread)
 - **Modified modules**:
   - `src/cli.rs`: Add `--no-assets` and `--parallel` arguments
   - `src/output.rs`: Extend to detect assets, transform URLs, and write assets to disk

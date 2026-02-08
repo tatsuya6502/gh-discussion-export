@@ -16,8 +16,8 @@ The system SHALL extract all GitHub asset URLs matching the pattern `github.com/
 
 #### Scenario: Extract image from Markdown syntax
 
-- **WHEN** reply contains `![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7)`
-- **THEN** system extracts URL `https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7`
+- **WHEN** reply contains `![Diagram](https://github.com/user-attachments/assets/123e4567-e89b-12d3-a456-426614174000)`
+- **THEN** system extracts URL `https://github.com/user-attachments/assets/123e4567-e89b-12d3-a456-426614174000`
 
 #### Scenario: No assets in discussion
 
@@ -69,9 +69,11 @@ The system SHALL save downloaded assets to a directory named `<discussion-number
 
 #### Scenario: Custom output path
 
-- **WHEN** discussion #1041 is exported to `./output/1041.md` with `--output ./output/1041.md`
+- **GIVEN** discussion #1041 is exported to `./output/my-export.md` with `--output ./output/my-export.md`
+- **WHEN** assets are downloaded
 - **THEN** assets are saved to `./output/1041-discussion-assets/` directory
-- **AND** asset directory is created alongside Markdown file
+- **AND** asset directory name is derived from discussion number, not output filename
+- **AND** asset directory is created in the same directory as the Markdown file
 
 #### Scenario: Multiple discussions in same directory
 
@@ -95,7 +97,17 @@ The system SHALL transform the exported Markdown to reference local asset paths 
 - **GIVEN** discussion contains `![ER図](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7)`
 - **AND** asset is downloaded to `1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png`
 - **WHEN** Markdown output is written
-- **THEN** image reference is transformed to `![ER図](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png "https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7")`
+- **THEN** image reference is transformed to `![ER図](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)`
+- **AND** original URL is preserved in HTML comment immediately after: `<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->`
+
+#### Scenario: Transform markdown image syntax with existing title
+
+- **GIVEN** discussion contains `![ER図](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 "Existing title")`
+- **AND** asset is downloaded to `1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png`
+- **WHEN** Markdown output is written
+- **THEN** image reference is transformed to `![ER図](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png "Existing title")`
+- **AND** existing title is preserved
+- **AND** original URL is preserved in HTML comment immediately after: `<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->`
 
 #### Scenario: Preserve all other img attributes
 
@@ -111,14 +123,14 @@ The system SHALL download each unique asset UUID only once per discussion, even 
 
 #### Scenario: Same asset appears in body and comment
 
-- **GIVEN** same UUID `abc123` appears in discussion body and a comment
+- **GIVEN** same UUID `6c72b402-4a5c-45cc-9b0a-50717f8a09a7` appears in discussion body and a comment
 - **WHEN** assets are downloaded
 - **THEN** asset is downloaded only once
 - **AND** both Markdown references point to same local file
 
 #### Scenario: Same asset appears multiple times in same comment
 
-- **GIVEN** same UUID `def456` appears three times in one comment
+- **GIVEN** same UUID `7d83c513-5b6d-46dd-a01b-61728e8b0a8b` appears three times in one comment
 - **WHEN** assets are downloaded
 - **THEN** asset is downloaded only once
 - **AND** all three references point to same local file

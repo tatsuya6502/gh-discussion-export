@@ -81,7 +81,7 @@
 - [ ] 9.1 Extend `src/output.rs::generate_original_post()` to accept asset mapping and transform body
 - [ ] 9.2 Extend `src/output.rs::generate_comments()` to accept asset mapping and transform comments/replies
 - [ ] 9.3 Modify `src/output.rs::format_discussion()` to:
-  - Call asset detection if `--no-assets` flag is not set
+  - Call asset detection if `args.no_assets` is false
   - Download detected assets to asset directory
   - Build asset URL mapping (original URL -> local path)
   - Transform all content with asset URL mapping

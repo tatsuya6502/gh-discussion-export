@@ -182,9 +182,9 @@ The system SHALL request `totalCount` fields in GraphQL queries to enable accura
 - **AND** system shows count of items fetched so far
 - **AND** system displays final count when complete
 
-### Requirement: Suppress progress output for non-terminal usage
+### Requirement: Suppress inline progress updates for non-terminal usage
 
-The system SHALL detect when output is not a terminal (e.g., piped to file) and suppress inline progress updates; emit line-by-line progress messages instead.
+The system SHALL detect when output is not a terminal (e.g., piped to file) and suppress inline progress updates (carriage-return based); emit line-by-line progress messages instead.
 
 #### Scenario: Piped output to file
 
