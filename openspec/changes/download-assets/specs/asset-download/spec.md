@@ -185,7 +185,7 @@ The system SHALL continue processing when asset download fails, logging a warnin
 - **WHEN** all downloads fail
 - **THEN** system prints 3 warning messages to stderr
 - **AND** Markdown file is still created
-- **AND** asset directory may or may not be created (implementation choice)
+- **AND** asset directory is not created when all downloads fail
 - **AND** all asset URLs remain unchanged in Markdown
 
 ### Requirement: Support --no-assets flag

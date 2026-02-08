@@ -36,4 +36,4 @@ None. This is a new feature that does not modify existing requirement-level beha
 - **GraphQL queries**: Extend `DISCUSSION_QUERY`, `COMMENTS_QUERY`, and `REPLIES_QUERY` to include `totalCount` fields for progress reporting
 - **File system operations**: Create asset directories, write downloaded files
 - **Network operations**: HTTP requests to asset URLs (using existing `reqwest` client)
-- **Output behavior**: Markdown files will contain modified `src` attributes in `<img>` tags and image references, with original URLs preserved in `data-original-url` attributes or title text
+- **Output behavior**: Markdown files will contain modified `src` attributes in `<img>` tags and image references. For HTML `<img>` tags, original URLs are preserved in `data-original-url` attributes. For Markdown image syntax, original URLs are preserved in HTML comments adjacent to the image.
