@@ -13,6 +13,14 @@ fn validate_positive_number(s: &str) -> std::result::Result<u64, String> {
     }
 }
 
+/// Custom validator to ensure parallel count is at least 1
+fn validate_positive_parallel(s: &str) -> std::result::Result<usize, String> {
+    match s.parse::<usize>() {
+        Ok(n) if n >= 1 => Ok(n),
+        _ => Err("Parallel count must be at least 1.".to_string()),
+    }
+}
+
 /// Command-line arguments for GitHub Discussion Export
 #[derive(Parser, Debug)]
 #[command(name = "gh-discussion-export")]
@@ -49,6 +57,7 @@ pub struct CliArgs {
         long,
         value_name = "NUM",
         default_value = "4",
+        value_parser = validate_positive_parallel,
         help = "Number of parallel asset downloads (default: 4)"
     )]
     pub parallel: usize,

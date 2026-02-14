@@ -38,42 +38,23 @@ pub fn extract_asset_uuid(url: &str) -> Option<String> {
 /// # Returns
 /// A vector of all detected GitHub asset URLs
 pub fn detect_asset_urls(html: &str) -> Vec<String> {
-    let mut urls = Vec::new();
+    use scraper::{Html, Selector};
 
-    // Simple regex-based detection for <img> tags with GitHub asset URLs
-    // This is a basic implementation - for production use, consider using the scraper crate
-    for line in html.lines() {
-        if line.contains("<img") && line.contains("github.com/user-attachments/assets/") {
-            // Extract the URL from src attribute
-            if let Some(start) = line.find("src=\"") {
-                let start = start + 5; // skip past src=\"
-                if let Some(end) = line[start..].find('\"') {
-                    let url = &line[start..start + end];
-                    if extract_asset_uuid(url).is_some() {
-                        urls.push(url.to_string());
-                    }
-                }
-            }
-            // Also handle single quotes
-            if let Some(start) = line.find("src='") {
-                let start = start + 5;
-                if let Some(end) = line[start..].find('\'') {
-                    let url = &line[start..start + end];
-                    if extract_asset_uuid(url).is_some() {
-                        urls.push(url.to_string());
-                    }
-                }
-            }
-        }
-    }
+    let document = Html::parse_fragment(html);
+    let selector = Selector::parse("img").unwrap();
 
-    urls
+    document
+        .select(&selector)
+        .filter_map(|el| el.value().attr("src"))
+        .filter(|src| extract_asset_uuid(src).is_some())
+        .map(|s| s.to_string())
+        .collect()
 }
 
 /// Detect all GitHub asset URLs in Markdown image syntax.
 ///
-/// Scans Markdown content for image references `![alt](url)` and extracts
-/// those pointing to GitHub user-attachments assets.
+/// Scans Markdown content for image references `![alt](url)` or `![alt](url "title")`
+/// and extracts those pointing to GitHub user-attachments assets.
 ///
 /// # Arguments
 /// * `text` - The Markdown text to scan
@@ -83,7 +64,7 @@ pub fn detect_asset_urls(html: &str) -> Vec<String> {
 pub fn detect_markdown_assets(text: &str) -> Vec<String> {
     let mut urls = Vec::new();
 
-    // Match Markdown image syntax: ![alt](url)
+    // Match Markdown image syntax: ![alt](url) or ![alt](url "title")
     for line in text.lines() {
         let mut start = 0;
         while let Some(img_start) = line[start..].find("![").and_then(|pos| {
@@ -92,7 +73,13 @@ pub fn detect_markdown_assets(text: &str) -> Vec<String> {
         }) {
             // Find the closing parenthesis
             if let Some(img_end) = line[img_start..].find(')') {
-                let url = &line[img_start..img_start + img_end];
+                // Extract full content between ]( and )
+                let full_content = &line[img_start..img_start + img_end];
+                // Split on first space to separate URL from optional title
+                // Format: url or url "title"
+                let url = full_content.split_once(' ')
+                    .map(|(url_part, _)| url_part)
+                    .unwrap_or(full_content);
                 if extract_asset_uuid(url).is_some() {
                     urls.push(url.to_string());
                 }
