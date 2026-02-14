@@ -815,6 +815,7 @@ mod tests {
             body: "Test body".to_string(),
             author: None, // Deleted author
             comments: crate::models::DiscussionComments {
+                total_count: None,
                 nodes: None,
                 page_info: crate::models::PageInfo {
                     has_next_page: false,
@@ -833,6 +834,7 @@ mod tests {
                 .with_timezone(&Utc),
             body: "Comment 1".to_string(),
             replies: crate::models::CommentReplies {
+                total_count: None,
                 nodes: Some(vec![Some(crate::models::Reply {
                     id: "reply_1".to_string(),
                     database_id: 1,
@@ -899,6 +901,7 @@ mod tests {
                     .with_timezone(&Utc),
                 body: "Comment 2".to_string(),
                 replies: crate::models::CommentReplies {
+                    total_count: None,
                     nodes: Some(vec![]),
                     page_info: crate::models::PageInfo {
                         has_next_page: false,
@@ -917,6 +920,7 @@ mod tests {
                     .with_timezone(&Utc),
                 body: "Comment 1".to_string(),
                 replies: crate::models::CommentReplies {
+                    total_count: None,
                     nodes: Some(vec![]),
                     page_info: crate::models::PageInfo {
                         has_next_page: false,
@@ -935,6 +939,7 @@ mod tests {
                     .with_timezone(&Utc),
                 body: "Comment 3".to_string(),
                 replies: crate::models::CommentReplies {
+                    total_count: None,
                     nodes: Some(vec![]),
                     page_info: crate::models::PageInfo {
                         has_next_page: false,
@@ -964,6 +969,7 @@ mod tests {
                 .with_timezone(&Utc),
             body: "Comment 1".to_string(),
             replies: crate::models::CommentReplies {
+                total_count: None,
                 nodes: Some(vec![
                     Some(Reply {
                         id: "reply_3".to_string(),

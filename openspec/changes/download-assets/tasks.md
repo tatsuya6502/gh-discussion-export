@@ -1,37 +1,37 @@
 ## 1. Dependencies and Project Setup
 
-- [ ] 1.1 Add `scraper` crate to Cargo.toml for HTML parsing
-- [ ] 1.2 Add `crossbeam` crate to Cargo.toml for scoped parallelism (or implement with std::thread)
-- [ ] 1.3 Run `cargo check` to verify dependencies compile correctly
-- [ ] 1.4 Run `cargo test` to ensure existing tests still pass
+- [x] 1.1 Add `scraper` crate to Cargo.toml for HTML parsing
+- [x] 1.2 Add `crossbeam` crate to Cargo.toml for scoped parallelism (or implement with std::thread)
+- [x] 1.3 Run `cargo check` to verify dependencies compile correctly
+- [x] 1.4 Run `cargo test` to ensure existing tests still pass
 
 ## 2. GraphQL Query Extensions
 
-- [ ] 2.1 Add `totalCount` field to `DISCUSSION_QUERY` (if applicable for discussion metadata)
-- [ ] 2.2 Add `totalCount` field to `COMMENTS_QUERY` in comments connection
-- [ ] 2.3 Add `totalCount` field to `REPLIES_QUERY` in replies connection
-- [ ] 2.4 Update `DiscussionComments`, `CommentReplies`, and related models in `src/models.rs` to include `totalCount: Option<usize>`
-- [ ] 2.5 Write unit tests for `totalCount` field parsing from GraphQL responses
+- [x] 2.1 Add `totalCount` field to `DISCUSSION_QUERY` (if applicable for discussion metadata)
+- [x] 2.2 Add `totalCount` field to `COMMENTS_QUERY` in comments connection
+- [x] 2.3 Add `totalCount` field to `REPLIES_QUERY` in replies connection
+- [x] 2.4 Update `DiscussionComments`, `CommentReplies`, and related models in `src/models.rs` to include `totalCount: Option<usize>`
+- [x] 2.5 Write unit tests for `totalCount` field parsing from GraphQL responses
 
 ## 3. CLI Argument Extensions
 
-- [ ] 3.1 Add `no_assets: bool` field to `CliArgs` struct with `action = ArgAction::SetTrue`
-- [ ] 3.2 Add `parallel: usize` field to `CliArgs` struct with `default_value = "4"` and short flag `-j`
-- [ ] 3.3 Add helper method `CliArgs::should_download_assets(&self) -> bool` that returns `!self.no_assets`
-- [ ] 3.4 Add helper method `CliArgs::asset_dir_name(&self) -> String` that returns `<number>-discussion-assets`
-- [ ] 3.5 Write CLI argument parsing tests for new flags (positive and negative cases)
-- [ ] 3.6 Run `cargo test` to verify CLI tests pass
+- [x] 3.1 Add `no_assets: bool` field to `CliArgs` struct with `action = ArgAction::SetTrue`
+- [x] 3.2 Add `parallel: usize` field to `CliArgs` struct with `default_value = "4"` and short flag `-j`
+- [x] 3.3 Add helper method `CliArgs::should_download_assets(&self) -> bool` that returns `!self.no_assets`
+- [x] 3.4 Add helper method `CliArgs::asset_dir_name(&self) -> String` that returns `<number>-discussion-assets`
+- [x] 3.5 Write CLI argument parsing tests for new flags (positive and negative cases)
+- [x] 3.6 Run `cargo test` to verify CLI tests pass
 
 ## 4. Asset Detection Module
 
-- [ ] 4.1 Create new module `src/assets.rs` with `mod assets;` in `src/lib.rs`
-- [ ] 4.2 Implement function to extract UUID from GitHub asset URL (`extract_asset_uuid(url: &str) -> Option<String>`)
-- [ ] 4.3 Implement function to detect all GitHub asset URLs in HTML content (`detect_asset_urls(html: &str) -> Vec<String>`)
-- [ ] 4.4 Implement function to detect all GitHub asset URLs in Markdown image syntax (`detect_markdown_assets(text: &str) -> Vec<String>`)
-- [ ] 4.5 Implement deduplication function to get unique UUIDs (`dedupe_asset_urls(urls: Vec<String>) -> Vec<String>`)
-- [ ] 4.6 Write unit tests for UUID extraction from various URL formats
-- [ ] 4.7 Write unit tests for asset URL detection in HTML and Markdown
-- [ ] 4.8 Write unit tests for deduplication logic
+- [x] 4.1 Create new module `src/assets.rs` with `mod assets;` in `src/lib.rs`
+- [x] 4.2 Implement function to extract UUID from GitHub asset URL (`extract_asset_uuid(url: &str) -> Option<String>`)
+- [x] 4.3 Implement function to detect all GitHub asset URLs in HTML content (`detect_asset_urls(html: &str) -> Vec<String>`)
+- [x] 4.4 Implement function to detect all GitHub asset URLs in Markdown image syntax (`detect_markdown_assets(text: &str) -> Vec<String>`)
+- [x] 4.5 Implement deduplication function to get unique UUIDs (`dedupe_asset_urls(urls: Vec<String>) -> Vec<String>`)
+- [x] 4.6 Write unit tests for UUID extraction from various URL formats
+- [x] 4.7 Write unit tests for asset URL detection in HTML and Markdown
+- [x] 4.8 Write unit tests for deduplication logic
 
 ## 5. Asset Download Module
 

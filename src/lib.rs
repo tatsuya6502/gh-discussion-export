@@ -1,3 +1,4 @@
+pub mod assets;
 pub mod auth;
 pub mod cli;
 pub(crate) mod command_runner;
