@@ -35,14 +35,14 @@
 
 ## 5. Asset Download Module
 
-- [ ] 5.1 Implement function to map Content-Type to file extension (`content_type_to_extension(content_type: &str) -> String`)
-- [ ] 5.2 Implement function to download single asset to local path with authentication (`download_asset(client: &Client, token: &str, url: &str, path: &Path) -> Result<()>`)
-- [ ] 5.3 Implement function to download assets in parallel with configurable parallelism (`download_assets_parallel(client: &Client, token: &str, urls: Vec<String>, dir: &Path, parallel: usize) -> Vec<Result<String>>`)
-- [ ] 5.4 Ensure `.bearer_auth(token)` is called on asset download requests for private repository access
-- [ ] 5.5 Implement error handling to log warnings and continue on download failures
-- [ ] 5.6 Write unit tests for Content-Type to extension mapping
-- [ ] 5.7 Write integration tests for successful download with authentication
-- [ ] 5.8 Write integration tests for download failure handling (404, 403, timeout)
+- [x] 5.1 Implement function to map Content-Type to file extension (`content_type_to_extension(content_type: &str) -> String`)
+- [x] 5.2 Implement function to download single asset to local path with authentication (`download_asset(client: &Client, token: &str, url: &str, path: &Path) -> Result<()>`)
+- [x] 5.3 Implement function to download assets in parallel with configurable parallelism (`download_assets_parallel(client: &Client, token: &str, urls: Vec<String>, dir: &Path, parallel: usize) -> Vec<Result<String>>`)
+- [x] 5.4 Ensure `.bearer_auth(token)` is called on asset download requests for private repository access
+- [x] 5.5 Implement error handling to log warnings and continue on download failures
+- [x] 5.6 Write unit tests for Content-Type to extension mapping
+- [-] 5.7 Write integration tests for successful download with authentication (deferred to manual E2E testing, see tasks 10.7-10.11)
+- [-] 5.8 Write integration tests for download failure handling (404, 403, timeout) (deferred to manual E2E testing, see tasks 10.7-10.11)
 
 ## 6. Markdown Transformation Module
 
