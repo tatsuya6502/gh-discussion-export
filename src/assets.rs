@@ -15,7 +15,9 @@ use std::collections::HashSet;
 /// * `None` - If the URL doesn't match the expected pattern
 pub fn extract_asset_uuid(url: &str) -> Option<String> {
     // Match github.com/user-attachments/assets/UUID format
-    if url.contains("github.com/user-attachments/assets/") {
+    // SECURITY: Use starts_with to ensure we only match actual GitHub URLs
+    // prevents matching malicious URLs like https://evil.com/github.com/user-attachments/assets/
+    if url.starts_with("https://github.com/user-attachments/assets/") {
         let parts: Vec<&str> = url.split("github.com/user-attachments/assets/").collect();
         if parts.len() > 1 {
             let uuid = parts[1].split('/').next().unwrap_or("");
@@ -77,7 +79,8 @@ pub fn detect_markdown_assets(text: &str) -> Vec<String> {
                 let full_content = &line[img_start..img_start + img_end];
                 // Split on first space to separate URL from optional title
                 // Format: url or url "title"
-                let url = full_content.split_once(' ')
+                let url = full_content
+                    .split_once(' ')
                     .map(|(url_part, _)| url_part)
                     .unwrap_or(full_content);
                 if extract_asset_uuid(url).is_some() {
@@ -140,6 +143,30 @@ mod tests {
     #[test]
     fn test_extract_uuid_empty_string() {
         assert_eq!(extract_asset_uuid(""), None);
+    }
+
+    #[test]
+    fn test_extract_uuid_rejects_malicious_domain() {
+        // SECURITY: Must reject URLs from non-GitHub domains
+        // even if they contain the github.com path pattern
+        let malicious_url = "https://evil.com/github.com/user-attachments/assets/steal-token";
+        assert_eq!(extract_asset_uuid(malicious_url), None);
+    }
+
+    #[test]
+    fn test_extract_uuid_rejects_http_not_https() {
+        // SECURITY: GitHub uses HTTPS only
+        let http_url =
+            "http://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7";
+        assert_eq!(extract_asset_uuid(http_url), None);
+    }
+
+    #[test]
+    fn test_extract_uuid_rejects_subdomain_attack() {
+        // SECURITY: Must be exact domain, not subdomain
+        let subdomain_url =
+            "https://fake-github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7";
+        assert_eq!(extract_asset_uuid(subdomain_url), None);
     }
 
     #[test]
