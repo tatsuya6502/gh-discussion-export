@@ -46,15 +46,15 @@
 
 ## 6. Markdown Transformation Module
 
-- [ ] 6.1 Create new module `src/transform.rs` with `mod transform;` in `src/lib.rs` (or extend `src/output.rs`)
-- [ ] 6.2 Implement function to transform HTML `<img>` tag with local path and data-original-url attribute
-- [ ] 6.3 Implement function to transform Markdown image syntax with local path and title containing original URL
-- [ ] 6.4 Implement function to transform discussion body with asset URL replacements
-- [ ] 6.5 Implement function to transform comment body with asset URL replacements
-- [ ] 6.6 Implement function to transform reply body with asset URL replacements
-- [ ] 6.7 Write unit tests for HTML img tag transformation (preserve all attributes)
-- [ ] 6.8 Write unit tests for Markdown image syntax transformation
-- [ ] 6.9 Write unit tests that original URL is preserved in output
+- [x] 6.1 Create new module `src/transform.rs` with `mod transform;` in `src/lib.rs` (or extend `src/output.rs`)
+- [x] 6.2 Implement function to transform HTML `<img>` tag with local path and data-original-url attribute
+- [x] 6.3 Implement function to transform Markdown image syntax with local path and title containing original URL
+- [x] 6.4 Implement function to transform discussion body with asset URL replacements
+- [x] 6.5 Implement function to transform comment body with asset URL replacements
+- [x] 6.6 Implement function to transform reply body with asset URL replacements
+- [x] 6.7 Write unit tests for HTML img tag transformation (preserve all attributes)
+- [x] 6.8 Write unit tests for Markdown image syntax transformation
+- [x] 6.9 Write unit tests that original URL is preserved in output
 
 ## 7. Progress Reporting Module
 
