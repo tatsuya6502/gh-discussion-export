@@ -34,23 +34,24 @@ pub fn transform_html_img_tags(html: &str, asset_map: &HashMap<String, String>) 
             // Extract the src attribute value
             if let Some(src_value) = extract_src_attribute(img_tag) {
                 // Check if this is a GitHub asset URL
-                if let Some(uuid) = extract_asset_uuid(&src_value) {
-                    if let Some(local_path) = asset_map.get(&uuid) {
-                        // Transform the img tag
-                        let transformed = transform_img_tag(img_tag, &src_value, local_path, &src_value);
+                if let Some(uuid) = extract_asset_uuid(&src_value)
+                    && let Some(local_path) = asset_map.get(&uuid)
+                {
+                    // Transform the img tag
+                    let transformed =
+                        transform_img_tag(img_tag, &src_value, local_path, &src_value);
 
-                        // Replace in result
-                        result = format!(
-                            "{}{}{}",
-                            &result[..absolute_img_start],
-                            transformed,
-                            &result[absolute_tag_end + 1..]
-                        );
+                    // Replace in result
+                    result = format!(
+                        "{}{}{}",
+                        &result[..absolute_img_start],
+                        transformed,
+                        &result[absolute_tag_end + 1..]
+                    );
 
-                        // Update position to continue after this tag
-                        pos = absolute_img_start + transformed.len();
-                        continue;
-                    }
+                    // Update position to continue after this tag
+                    pos = absolute_img_start + transformed.len();
+                    continue;
                 }
             }
 
@@ -93,20 +94,24 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
                 // Check for opening ( immediately after ]
                 if transformed_line[absolute_bracket_end..].starts_with("](") {
                     // Find the closing )
-                    if let Some(paren_end) = transformed_line[absolute_bracket_end + 2..].find(')') {
+                    if let Some(paren_end) = transformed_line[absolute_bracket_end + 2..].find(')')
+                    {
                         let absolute_paren_end = absolute_bracket_end + 2 + paren_end;
 
                         // Extract the URL part (between ]( and ))
-                        let url_part = &transformed_line[absolute_bracket_end + 2..absolute_paren_end];
+                        let url_part =
+                            &transformed_line[absolute_bracket_end + 2..absolute_paren_end];
 
                         // Split on space to separate URL from optional title
                         // Format: url or url "title"
                         let (url, title) = if let Some(space_pos) = url_part.find(' ') {
                             let title_with_quotes = &url_part[space_pos + 1..];
-                            // Strip surrounding quotes if present
-                            let title = if title_with_quotes.starts_with('"') && title_with_quotes.ends_with('"') {
-                                &title_with_quotes[1..title_with_quotes.len() - 1]
-                            } else if title_with_quotes.starts_with('\'') && title_with_quotes.ends_with('\'') {
+                            // Strip surrounding quotes if present (either single or double)
+                            let title = if (title_with_quotes.starts_with('"')
+                                && title_with_quotes.ends_with('"'))
+                                || (title_with_quotes.starts_with('\'')
+                                    && title_with_quotes.ends_with('\''))
+                            {
                                 &title_with_quotes[1..title_with_quotes.len() - 1]
                             } else {
                                 title_with_quotes
@@ -117,42 +122,42 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
                         };
 
                         // Check if this is a GitHub asset URL
-                        if let Some(_uuid) = extract_asset_uuid(url) {
-                            if let Some(local_path) = asset_map.get(&_uuid.to_string()) {
-                                // Build replacement string
-                                let before = &transformed_line[..absolute_bracket_end + 2]; // ![alt](
-                                let after = &transformed_line[absolute_paren_end + 1..]; // Everything after )
+                        if let Some(_uuid) = extract_asset_uuid(url)
+                            && let Some(local_path) = asset_map.get(&_uuid.to_string())
+                        {
+                            // Build replacement string
+                            let before = &transformed_line[..absolute_bracket_end + 2]; // ![alt](
+                            let after = &transformed_line[absolute_paren_end + 1..]; // Everything after )
 
-                                let replacement = match title {
-                                    Some(t) => {
-                                        // ![alt](local-path "title")after
-                                        format!("{}{} \"{}\"){}", before, local_path, t, after)
-                                    }
-                                    None => {
-                                        // ![alt](local-path)after
-                                        let mut s = String::from(before);
-                                        s.push_str(local_path);
-                                        s.push(')');
-                                        s.push_str(after);
-                                        s
-                                    }
-                                };
+                            let replacement = match title {
+                                Some(t) => {
+                                    // ![alt](local-path "title")after
+                                    format!("{}{} \"{}\"){}", before, local_path, t, after)
+                                }
+                                None => {
+                                    // ![alt](local-path)after
+                                    let mut s = String::from(before);
+                                    s.push_str(local_path);
+                                    s.push(')');
+                                    s.push_str(after);
+                                    s
+                                }
+                            };
 
-                                // Add HTML comment with original URL
-                                let with_comment = format!("{}<!-- {} -->", replacement, url);
+                            // Add HTML comment with original URL
+                            let with_comment = format!("{}<!-- {} -->", replacement, url);
 
-                                // Replace the entire image reference
-                                transformed_line = format!(
-                                    "{}{}{}",
-                                    &transformed_line[..absolute_img_start],
-                                    with_comment,
-                                    &transformed_line[absolute_paren_end + 1..]
-                                );
+                            // Replace the entire image reference
+                            transformed_line = format!(
+                                "{}{}{}",
+                                &transformed_line[..absolute_img_start],
+                                with_comment,
+                                &transformed_line[absolute_paren_end + 1..]
+                            );
 
-                                // Update position to continue after this replacement
-                                start = absolute_img_start + with_comment.len();
-                                continue;
-                            }
+                            // Update position to continue after this replacement
+                            start = absolute_img_start + with_comment.len();
+                            continue;
                         }
                     }
                 }
@@ -263,16 +268,19 @@ fn transform_img_tag(img_tag: &str, old_src: &str, new_src: &str, original_url: 
     let mut result = img_tag.to_string();
 
     // Replace src attribute value
-    result = result.replace(&format!("src=\"{}\"", old_src), &format!("src=\"{}\"", new_src));
+    result = result.replace(
+        &format!("src=\"{}\"", old_src),
+        &format!("src=\"{}\"", new_src),
+    );
     result = result.replace(&format!("src='{}'", old_src), &format!("src='{}'", new_src));
 
     // Add data-original-url attribute before the closing >
-    if !result.contains("data-original-url") {
-        if let Some(tag_end) = result.find('>') {
-            let before = &result[..tag_end];
-            let after = &result[tag_end..];
-            result = format!("{} data-original-url=\"{}\"{}", before, original_url, after);
-        }
+    if !result.contains("data-original-url")
+        && let Some(tag_end) = result.find('>')
+    {
+        let before = &result[..tag_end];
+        let after = &result[tag_end..];
+        result = format!("{} data-original-url=\"{}\"{}", before, original_url, after);
     }
 
     result
@@ -315,7 +323,11 @@ mod tests {
 
         let result = transform_html_img_tags(html, &asset_map);
 
-        assert!(result.contains("src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""));
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""
+            )
+        );
         assert!(result.contains("data-original-url=\"https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7\""));
         assert!(result.contains("alt=\"Diagram\""));
     }
@@ -331,7 +343,11 @@ mod tests {
 
         let result = transform_html_img_tags(html, &asset_map);
 
-        assert!(result.contains("src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""));
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""
+            )
+        );
         assert!(result.contains("alt=\"ER図\""));
         assert!(result.contains("width=\"1192\""));
         assert!(result.contains("height=\"861\""));
@@ -368,8 +384,16 @@ mod tests {
 
         let result = transform_html_img_tags(html, &asset_map);
 
-        assert!(result.contains("src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""));
-        assert!(result.contains("src=\"1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg\""));
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""
+            )
+        );
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg\""
+            )
+        );
         assert!(result.contains("alt=\"First\""));
         assert!(result.contains("alt=\"Second\""));
     }
@@ -385,7 +409,9 @@ mod tests {
 
         let result = transform_markdown_images(text, &asset_map);
 
-        assert!(result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)"));
+        assert!(
+            result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)")
+        );
         assert!(result.contains("<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->"));
     }
 
@@ -400,7 +426,9 @@ mod tests {
 
         let result = transform_markdown_images(text, &asset_map);
 
-        assert!(result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png \"Existing title\")"));
+        assert!(result.contains(
+            "](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png \"Existing title\")"
+        ));
         assert!(result.contains("<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->"));
     }
 
@@ -448,8 +476,12 @@ mod tests {
 
         let result = transform_markdown_images(text, &asset_map);
 
-        assert!(result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)"));
-        assert!(result.contains("](1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg)"));
+        assert!(
+            result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)")
+        );
+        assert!(
+            result.contains("](1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg)")
+        );
         assert!(result.contains("<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->"));
         assert!(result.contains("<!-- https://github.com/user-attachments/assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b -->"));
     }
@@ -501,8 +533,14 @@ mod tests {
         let result = transform_discussion_body(body, &asset_map);
 
         // Both HTML and Markdown images should be transformed
-        assert!(result.contains("src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""));
-        assert!(result.contains("](1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg)"));
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""
+            )
+        );
+        assert!(
+            result.contains("](1041-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg)")
+        );
     }
 
     #[test]
@@ -516,7 +554,9 @@ mod tests {
 
         let result = transform_comment_body(body, &asset_map);
 
-        assert!(result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)"));
+        assert!(
+            result.contains("](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)")
+        );
         assert!(result.contains("<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->"));
     }
 
@@ -531,7 +571,11 @@ mod tests {
 
         let result = transform_reply_body(body, &asset_map);
 
-        assert!(result.contains("src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""));
+        assert!(
+            result.contains(
+                "src=\"1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\""
+            )
+        );
         assert!(result.contains("data-original-url"));
     }
 

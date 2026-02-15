@@ -58,14 +58,14 @@
 
 ## 7. Progress Reporting Module
 
-- [ ] 7.1 Create new module `src/progress.rs` with `mod progress;` in `src/lib.rs`
-- [ ] 7.2 Implement `ProgressReporter` struct with methods for starting, updating, and completing progress
-- [ ] 7.3 Implement terminal detection to check if stdout is a TTY (`is_terminal()`)
-- [ ] 7.4 Implement inline progress update with carriage return for TTY output
-- [ ] 7.5 Implement line-by-line progress for non-TTY output (piped/file)
-- [ ] 7.6 Implement function to format progress message with count and percentage (`format_progress(current: usize, total: usize) -> String`)
-- [ ] 7.7 Write unit tests for progress formatting
-- [ ] 7.8 Write unit tests for terminal detection logic
+- [x] 7.1 Create new module `src/progress.rs` with `mod progress;` in `src/lib.rs`
+- [x] 7.2 Implement `ProgressReporter` struct with methods for starting, updating, and completing progress
+- [x] 7.3 Implement terminal detection to check if stdout is a TTY (`is_terminal()`)
+- [x] 7.4 Implement inline progress update with carriage return for TTY output
+- [x] 7.5 Implement line-by-line progress for non-TTY output (piped/file)
+- [x] 7.6 Implement function to format progress message with count and percentage (`format_progress(current: usize, total: usize) -> String`)
+- [x] 7.7 Write unit tests for progress formatting
+- [x] 7.8 Write unit tests for terminal detection logic
 
 ## 8. Integration with Fetch Module
 

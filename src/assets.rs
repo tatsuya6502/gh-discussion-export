@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::thread;
 use std::sync::mpsc;
+use std::thread;
 
 /// Extract UUID from a GitHub asset URL.
 ///
@@ -146,7 +146,8 @@ pub fn content_type_to_extension(content_type: &str) -> String {
         "image/gif" => "gif",
         "image/webp" => "webp",
         "image/avif" => "avif",
-        "application/octet-stream" | "" | _ => "bin",
+        "application/octet-stream" | "" => "bin",
+        _ => "bin",
     };
     format!(".{}", ext)
 }
@@ -436,7 +437,10 @@ mod tests {
 
     #[test]
     fn test_content_type_to_extension_octet_stream() {
-        assert_eq!(content_type_to_extension("application/octet-stream"), ".bin");
+        assert_eq!(
+            content_type_to_extension("application/octet-stream"),
+            ".bin"
+        );
     }
 
     #[test]
