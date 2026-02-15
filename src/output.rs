@@ -221,6 +221,7 @@ mod tests {
                 .with_timezone(&Utc),
             body: body.to_string(),
             replies: crate::models::CommentReplies {
+                total_count: None,
                 nodes: Some(vec![]),
                 page_info: Default::default(),
             },

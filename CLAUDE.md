@@ -25,8 +25,9 @@ The tool is built from detailed specifications captured in `openspec/specs/`. Ea
 ### Critical Requirements
 
 1. **Lossless Fidelity**
-   - Body content MUST be emitted verbatim
-   - **Exception:** Markdown heading syntax (`#`) at line start is escaped with backslash to preserve document structure (see `openspec/changes/markdown-output/design.md` for rationale)
+   - Body content MUST be emitted verbatim, with the following exceptions:
+     - **Heading escape:** Markdown heading syntax (`#`) at line start is escaped with backslash to preserve document structure (see `openspec/changes/markdown-output/design.md` for rationale)
+     - **Asset URL transformation:** When the `--no-assets` flag is not set, GitHub asset URLs (`github.com/user-attachments/assets/*`) in body content are transformed to reference local paths while preserving original URLs for reference (see `openspec/changes/download-assets/design.md` for rationale)
    - No HTML rendering or other escaping
    - No trimming of whitespace or trailing newlines
    - UTF-8 encoding, LF line endings
