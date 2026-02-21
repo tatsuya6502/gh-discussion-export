@@ -127,19 +127,17 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
                         {
                             // Build replacement string
                             let before = &transformed_line[..absolute_bracket_end + 2]; // ![alt](
-                            let after = &transformed_line[absolute_paren_end + 1..]; // Everything after )
 
                             let replacement = match title {
                                 Some(t) => {
-                                    // ![alt](local-path "title")after
-                                    format!("{}{} \"{}\"){}", before, local_path, t, after)
+                                    // ![alt](local-path "title")
+                                    format!("{}{} \"{}\")", before, local_path, t)
                                 }
                                 None => {
-                                    // ![alt](local-path)after
+                                    // ![alt](local-path)
                                     let mut s = String::from(before);
                                     s.push_str(local_path);
                                     s.push(')');
-                                    s.push_str(after);
                                     s
                                 }
                             };
@@ -591,5 +589,39 @@ mod tests {
         let result = transform_markdown_images(text, &asset_map);
 
         assert!(result.ends_with('\n'));
+    }
+
+    #[test]
+    fn test_transform_markdown_image_with_trailing_text() {
+        let text = "![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7) some text after";
+        let mut asset_map = HashMap::new();
+        asset_map.insert(
+            "6c72b402-4a5c-45cc-9b0a-50717f8a09a7".to_string(),
+            "1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png".to_string(),
+        );
+
+        let result = transform_markdown_images(text, &asset_map);
+
+        assert_eq!(
+            result,
+            "![Diagram](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 --> some text after"
+        );
+    }
+
+    #[test]
+    fn test_transform_markdown_image_with_title_and_trailing_text() {
+        let text = "![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 \"A title\") some text after";
+        let mut asset_map = HashMap::new();
+        asset_map.insert(
+            "6c72b402-4a5c-45cc-9b0a-50717f8a09a7".to_string(),
+            "1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png".to_string(),
+        );
+
+        let result = transform_markdown_images(text, &asset_map);
+
+        assert_eq!(
+            result,
+            "![Diagram](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png \"A title\")<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 --> some text after"
+        );
     }
 }

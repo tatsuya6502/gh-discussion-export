@@ -4,7 +4,6 @@ use std::path::Path;
 use clap::Parser;
 use gh_discussion_export::assets::{
     dedupe_asset_urls, detect_asset_urls, detect_markdown_assets, download_assets_parallel,
-    extract_asset_uuid,
 };
 use gh_discussion_export::cli::CliArgs;
 use gh_discussion_export::client::ReqwestClient;
@@ -109,34 +108,34 @@ fn main() {
             );
 
             // Count successes and failures
-            let success_count = download_results.iter().filter(|r| r.is_ok()).count();
-            let failure_count = download_results.iter().filter(|r| r.is_err()).count();
+            let success_count = download_results.iter().filter(|r| r.result.is_ok()).count();
+            let failure_count = download_results
+                .iter()
+                .filter(|r| r.result.is_err())
+                .count();
 
             // Print warnings for failed downloads
-            for (i, result) in download_results.iter().enumerate() {
-                if let Err(e) = result {
+            for result in &download_results {
+                if let Err(e) = &result.result {
                     // Task 11.6: Provide clear message for 401 errors
                     if matches!(e, gh_discussion_export::error::Error::Authentication) {
                         eprintln!(
                             "Error: Authentication failed for asset '{}'. Please run `gh auth login` to authenticate.",
-                            unique_urls[i]
+                            result.url
                         );
                     } else {
-                        eprintln!(
-                            "Warning: Failed to download asset '{}': {}",
-                            unique_urls[i], e
-                        );
+                        eprintln!("Warning: Failed to download asset '{}': {}", result.url, e);
                     }
                 }
             }
 
-            // Build asset_map from UUID to local path
+            // Build asset_map from UUID to local path (only successful downloads)
             let mut map = HashMap::new();
-            for url in &unique_urls {
-                if let Some(uuid) = extract_asset_uuid(url) {
-                    // Use .bin extension as default (actual extension determined by Content-Type)
-                    let local_path = format!("{}/{}.bin", asset_dir_name, uuid);
-                    map.insert(uuid, local_path);
+            for result in &download_results {
+                if result.result.is_ok() {
+                    let local_path =
+                        format!("{}/{}{}", asset_dir_name, result.uuid, result.extension);
+                    map.insert(result.uuid.clone(), local_path);
                 }
             }
 
