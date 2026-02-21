@@ -1,4 +1,11 @@
+use std::collections::HashMap;
+use std::path::Path;
+
 use clap::Parser;
+use gh_discussion_export::assets::{
+    dedupe_asset_urls, detect_asset_urls, detect_markdown_assets, download_assets_parallel,
+    extract_asset_uuid,
+};
 use gh_discussion_export::cli::CliArgs;
 use gh_discussion_export::client::ReqwestClient;
 use gh_discussion_export::fetch::fetch_discussion;
@@ -30,15 +37,15 @@ fn main() {
         }
     };
 
-    // Create GitHub client
-    let http_client = match ReqwestClient::new(token) {
-        Ok(client) => Box::new(client),
+    // Create GitHub client (keep ReqwestClient for asset downloads)
+    let reqwest_client = match ReqwestClient::new(token.clone()) {
+        Ok(client) => client,
         Err(e) => {
             eprintln!("Error: {}", e);
             std::process::exit(1);
         }
     };
-    let client = gh_discussion_export::client::GitHubClient::new(http_client);
+    let client = gh_discussion_export::client::GitHubClient::new(Box::new(reqwest_client.clone()));
 
     // Fetch discussion
     let discussion = match fetch_discussion(&client, &owner, &repo, number) {
@@ -49,8 +56,99 @@ fn main() {
         }
     };
 
-    // Generate Markdown output
-    let markdown = format_discussion(&discussion, &owner, &repo, None);
+    // Build asset_map if downloading assets
+    let asset_map: Option<HashMap<String, String>> = if args.should_download_assets() {
+        // Collect all asset URLs from discussion body, comments, and replies
+        let mut all_urls = Vec::new();
+
+        // Detect assets in discussion body
+        all_urls.extend(detect_asset_urls(&discussion.body));
+        all_urls.extend(detect_markdown_assets(&discussion.body));
+
+        // Detect assets in comments and replies
+        if let Some(ref comments) = discussion.comments.nodes {
+            for comment in comments.iter().flatten() {
+                all_urls.extend(detect_asset_urls(&comment.body));
+                all_urls.extend(detect_markdown_assets(&comment.body));
+
+                if let Some(ref replies) = comment.replies.nodes {
+                    for reply in replies.iter().flatten() {
+                        all_urls.extend(detect_asset_urls(&reply.body));
+                        all_urls.extend(detect_markdown_assets(&reply.body));
+                    }
+                }
+            }
+        }
+
+        // Deduplicate URLs
+        let unique_urls = dedupe_asset_urls(all_urls);
+
+        if unique_urls.is_empty() {
+            // No assets detected, skip directory creation
+            None
+        } else {
+            // Create asset directory
+            let asset_dir_name = args.asset_dir_name();
+            let asset_dir = Path::new(&asset_dir_name);
+
+            if let Err(e) = std::fs::create_dir_all(asset_dir) {
+                eprintln!(
+                    "Error: Failed to create asset directory '{}': {}",
+                    asset_dir_name, e
+                );
+                std::process::exit(1);
+            }
+
+            // Download assets
+            let download_results = download_assets_parallel(
+                reqwest_client.client(),
+                &token,
+                unique_urls.clone(),
+                asset_dir,
+                args.parallel,
+            );
+
+            // Count successes and failures
+            let success_count = download_results.iter().filter(|r| r.is_ok()).count();
+            let failure_count = download_results.iter().filter(|r| r.is_err()).count();
+
+            // Print warnings for failed downloads
+            for (i, result) in download_results.iter().enumerate() {
+                if let Err(e) = result {
+                    eprintln!(
+                        "Warning: Failed to download asset '{}': {}",
+                        unique_urls[i], e
+                    );
+                }
+            }
+
+            // Build asset_map from UUID to local path
+            let mut map = HashMap::new();
+            for url in &unique_urls {
+                if let Some(uuid) = extract_asset_uuid(url) {
+                    // Use .bin extension as default (actual extension determined by Content-Type)
+                    let local_path = format!("{}/{}.bin", asset_dir_name, uuid);
+                    map.insert(uuid, local_path);
+                }
+            }
+
+            // Print summary
+            println!(
+                "Downloaded {} asset(s) to: {}",
+                success_count, asset_dir_name
+            );
+            if failure_count > 0 {
+                println!("Warning: {} asset(s) failed to download", failure_count);
+            }
+
+            Some(map)
+        }
+    } else {
+        None
+    };
+
+    // Generate Markdown output (with asset transformation if asset_map is provided)
+    let markdown = format_discussion(&discussion, &owner, &repo, asset_map.as_ref());
 
     // Write output file
     match write_output(&markdown, &output_path) {

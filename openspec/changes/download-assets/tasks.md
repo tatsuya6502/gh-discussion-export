@@ -78,32 +78,32 @@
 
 ## 9. Integration with Output Module
 
-- [ ] 9.1 Extend `src/output.rs::generate_original_post()` to accept asset mapping and transform body
-- [ ] 9.2 Extend `src/output.rs::generate_comments()` to accept asset mapping and transform comments/replies
-- [ ] 9.3 Modify `src/output.rs::format_discussion()` to:
+- [x] 9.1 Extend `src/output.rs::generate_original_post()` to accept asset mapping and transform body
+- [x] 9.2 Extend `src/output.rs::generate_comments()` to accept asset mapping and transform comments/replies
+- [x] 9.3 Modify `src/output.rs::format_discussion()` to:
   - Call asset detection if `args.no_assets` is false
   - Download detected assets to asset directory
   - Build asset URL mapping (original URL -> local path)
   - Transform all content with asset URL mapping
-- [ ] 9.4 Handle case when asset directory creation fails (error with clear message)
-- [ ] 9.5 Handle case when no assets are detected (skip directory creation)
-- [ ] 9.6 Write integration tests for discussion export with assets
-- [ ] 9.7 Write integration tests for discussion export with `--no-assets` flag
-- [ ] 9.8 Run `cargo test` to verify output module tests still pass
+- [x] 9.4 Handle case when asset directory creation fails (error with clear message) (implemented in task 10.1)
+- [x] 9.5 Handle case when no assets are detected (skip directory creation) (implemented in task 10.1)
+- [x] 9.6 Write integration tests for discussion export with assets
+- [x] 9.7 Write integration tests for discussion export with `--no-assets` flag
+- [x] 9.8 Run `cargo test` to verify output module tests still pass
 
 ## 10. Main Entry Point Integration
 
-- [ ] 10.1 Modify `src/main.rs` to create asset directory if downloading assets
-- [ ] 10.2 Modify `src/main.rs` to pass GitHub token to asset download functions (token already retrieved from `gh auth token`)
-- [ ] 10.3 Modify `src/main.rs` to pass CLI flags to output formatting function
-- [ ] 10.4 Ensure proper error propagation for asset download failures
-- [ ] 10.5 Display final summary with asset count and location
-- [ ] 10.6 Display warning count if any assets failed to download
-- [ ] 10.7 Test end-to-end with real discussion containing images (public repository)
-- [ ] 10.8 Test end-to-end with private repository discussion containing images (verify authentication works)
-- [ ] 10.9 Test end-to-end with discussion containing no images
-- [ ] 10.10 Test end-to-end with `--no-assets` flag
-- [ ] 10.11 Test end-to-end with custom parallelism (`-j 1`, `-j 8`)
+- [x] 10.1 Modify `src/main.rs` to create asset directory if downloading assets
+- [x] 10.2 Modify `src/main.rs` to pass GitHub token to asset download functions (token already retrieved from `gh auth token`)
+- [x] 10.3 Modify `src/main.rs` to pass CLI flags to output formatting function
+- [x] 10.4 Ensure proper error propagation for asset download failures
+- [x] 10.5 Display final summary with asset count and location
+- [x] 10.6 Display warning count if any assets failed to download
+- [-] 10.7 Test end-to-end with real discussion containing images (public repository) (deferred: manual testing)
+- [-] 10.8 Test end-to-end with private repository discussion containing images (verify authentication works) (deferred: manual testing)
+- [-] 10.9 Test end-to-end with discussion containing no images (deferred: manual testing)
+- [-] 10.10 Test end-to-end with `--no-assets` flag (deferred: manual testing)
+- [-] 10.11 Test end-to-end with custom parallelism (`-j 1`, `-j 8`) (deferred: manual testing)
 
 ## 11. Error Handling and Edge Cases
 
