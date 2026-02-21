@@ -50,6 +50,7 @@ query ($id: ID!, $after: String) {
                     createdAt
                     body
                     replies(first: 100) {
+                        totalCount
                         nodes {
                             id
                             databaseId

@@ -8,6 +8,7 @@ use serde_json::Value;
 /// Response structure for comments query
 #[derive(Debug)]
 struct CommentsResponse {
+    total_count: Option<usize>,
     nodes: Option<Vec<Option<Comment>>>,
     page_info: crate::models::PageInfo,
 }
@@ -189,13 +190,7 @@ pub(crate) fn fetch_all_comments(
 ) -> Result<Vec<Comment>> {
     let mut all_comments = Vec::new();
     let mut after: Option<String> = None;
-
-    // Create a progress reporter for comments if total count is available
-    let mut comment_progress = total_count.map(|tc| ProgressReporter::new(tc, "Fetching comments"));
-
-    if let Some(ref p) = comment_progress {
-        p.start();
-    }
+    let mut comment_progress = None;
 
     loop {
         let variables = serde_json::json!({
@@ -205,6 +200,17 @@ pub(crate) fn fetch_all_comments(
 
         let response = execute_query_raw(client, COMMENTS_QUERY, variables)?;
         let comments_response = parse_comments_response(response)?;
+
+        // Initialize progress reporter on first page if total_count was not provided
+        if comment_progress.is_none() {
+            let tc = total_count.or(comments_response.total_count).unwrap_or(0);
+            if tc > 0 {
+                comment_progress = Some(ProgressReporter::new(tc, "Fetching comments"));
+                if let Some(ref p) = comment_progress {
+                    p.start();
+                }
+            }
+        }
 
         // Accumulate comments (filter out nulls from nodes array)
         if let Some(nodes) = comments_response.nodes {
@@ -368,6 +374,12 @@ fn parse_comments_response(response: Value) -> Result<CommentsResponse> {
         )
     })?;
 
+    // Parse totalCount
+    let total_count: Option<usize> = comments
+        .get("totalCount")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize);
+
     // Parse nodes
     let nodes: Option<Vec<Option<Comment>>> = match comments.get("nodes") {
         Some(v) => Some(
@@ -385,7 +397,11 @@ fn parse_comments_response(response: Value) -> Result<CommentsResponse> {
     let page_info: crate::models::PageInfo = serde_json::from_value(page_info_value.clone())
         .map_err(|e| Error::JsonParse(format!("Failed to parse PageInfo: {}", e)))?;
 
-    Ok(CommentsResponse { nodes, page_info })
+    Ok(CommentsResponse {
+        total_count,
+        nodes,
+        page_info,
+    })
 }
 
 /// Parse a raw JSON response into a RepliesResponse

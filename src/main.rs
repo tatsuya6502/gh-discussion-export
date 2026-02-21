@@ -86,11 +86,12 @@ fn main() {
             // No assets detected, skip directory creation
             None
         } else {
-            // Create asset directory
+            // Create asset directory in the same directory as the output file
             let asset_dir_name = args.asset_dir_name();
-            let asset_dir = Path::new(&asset_dir_name);
+            let output_parent = Path::new(&output_path).parent().unwrap_or(Path::new("."));
+            let asset_dir = output_parent.join(&asset_dir_name);
 
-            if let Err(e) = std::fs::create_dir_all(asset_dir) {
+            if let Err(e) = std::fs::create_dir_all(&asset_dir) {
                 eprintln!(
                     "Error: Failed to create asset directory '{}': {}",
                     asset_dir_name, e
@@ -103,7 +104,7 @@ fn main() {
                 reqwest_client.client(),
                 &token,
                 unique_urls.clone(),
-                asset_dir,
+                &asset_dir,
                 args.parallel,
             );
 
