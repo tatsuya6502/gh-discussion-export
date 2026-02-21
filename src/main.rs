@@ -115,10 +115,18 @@ fn main() {
             // Print warnings for failed downloads
             for (i, result) in download_results.iter().enumerate() {
                 if let Err(e) = result {
-                    eprintln!(
-                        "Warning: Failed to download asset '{}': {}",
-                        unique_urls[i], e
-                    );
+                    // Task 11.6: Provide clear message for 401 errors
+                    if matches!(e, gh_discussion_export::error::Error::Authentication) {
+                        eprintln!(
+                            "Error: Authentication failed for asset '{}'. Please run `gh auth login` to authenticate.",
+                            unique_urls[i]
+                        );
+                    } else {
+                        eprintln!(
+                            "Warning: Failed to download asset '{}': {}",
+                            unique_urls[i], e
+                        );
+                    }
                 }
             }
 

@@ -166,27 +166,51 @@ pub fn content_type_to_extension(content_type: &str) -> String {
 /// # Returns
 /// * `Ok(())` if download succeeded
 /// * `Err(Error)` if download failed (network error, IO error, etc.)
+///
+/// # Behavior
+/// - Skips download if file already exists (task 11.2)
+/// - Handles 401 (authentication), 403 (permission), 404 (not found) with specific errors
+/// - Handles network timeout with descriptive error message
+/// - Handles permission/disk space errors when writing files
 pub fn download_asset(
     client: &reqwest::blocking::Client,
     token: &str,
     url: &str,
     path: &Path,
 ) -> crate::error::Result<()> {
+    // Task 11.2: Skip re-download if file already exists
+    if path.exists() {
+        return Ok(());
+    }
+
     // Download with bearer authentication (task 5.4 requirement)
-    let response = client
-        .get(url)
-        .bearer_auth(token)
-        .send()
-        .map_err(|e| crate::error::Error::Http(format!("Failed to download asset: {}", e)))?;
+    let response = client.get(url).bearer_auth(token).send().map_err(|e| {
+        // Task 11.3: Detect timeout and provide clear message
+        if e.is_timeout() {
+            crate::error::Error::Http(format!("Network timeout while downloading asset: {}", url))
+        } else if e.is_connect() {
+            crate::error::Error::Http(format!(
+                "Failed to connect to server while downloading asset: {}",
+                url
+            ))
+        } else {
+            crate::error::Error::Http(format!("Failed to download asset: {}", e))
+        }
+    })?;
 
     // Check HTTP status
     let status = response.status();
-    if status.as_u16() == 404 {
+    if status.as_u16() == 401 {
+        // Task 11.6: Handle 401 with clear message
+        return Err(crate::error::Error::Authentication);
+    } else if status.as_u16() == 404 {
+        // Task 11.4: Asset not found
         return Err(crate::error::Error::Http(format!(
             "Asset not found (HTTP 404): {}",
             url
         )));
     } else if status.as_u16() == 403 {
+        // Task 11.5: Authentication failed or access denied
         return Err(crate::error::Error::PermissionDenied(format!(
             "Authentication failed or access denied (HTTP 403): {}",
             url
@@ -205,14 +229,41 @@ pub fn download_asset(
 
     // Write to file (create parent directories if needed)
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(crate::error::Error::Io)?;
+        std::fs::create_dir_all(parent).map_err(|e| {
+            // Task 11.7 & 11.8: Better error messages for IO errors
+            categorize_io_error(e, "create directory")
+        })?;
     }
 
-    let mut file = File::create(path).map_err(crate::error::Error::Io)?;
+    let mut file = File::create(path).map_err(|e| categorize_io_error(e, "create file"))?;
 
-    file.write_all(&bytes).map_err(crate::error::Error::Io)?;
+    file.write_all(&bytes)
+        .map_err(|e| categorize_io_error(e, "write file"))?;
 
     Ok(())
+}
+
+/// Categorize IO errors into more specific error types.
+///
+/// Helps distinguish between permission errors, disk space errors, and other IO issues.
+fn categorize_io_error(e: std::io::Error, operation: &str) -> crate::error::Error {
+    use std::io::ErrorKind;
+    match e.kind() {
+        ErrorKind::PermissionDenied => crate::error::Error::Io(std::io::Error::new(
+            ErrorKind::PermissionDenied,
+            format!(
+                "Permission denied: failed to {} for asset: {}",
+                operation, e
+            ),
+        )),
+        ErrorKind::StorageFull | ErrorKind::WriteZero => {
+            crate::error::Error::Io(std::io::Error::new(
+                ErrorKind::StorageFull,
+                "Disk full or storage quota exceeded",
+            ))
+        }
+        _ => crate::error::Error::Io(e),
+    }
 }
 
 /// Download multiple assets in parallel with configurable parallelism.
@@ -466,6 +517,55 @@ mod tests {
     #[test]
     fn test_content_type_to_extension_avif() {
         assert_eq!(content_type_to_extension("image/avif"), ".avif");
+    }
+
+    // Task 11.9: Unit tests for error categorization
+    #[test]
+    fn test_categorize_io_error_permission_denied() {
+        use std::io::{self, ErrorKind};
+        let error = io::Error::new(ErrorKind::PermissionDenied, "access denied");
+        let result = categorize_io_error(error, "test");
+        // Should be an Io error with permission denied message
+        assert!(matches!(result, crate::error::Error::Io(_)));
+    }
+
+    #[test]
+    fn test_categorize_io_error_other() {
+        use std::io;
+        let error = io::Error::other("some error");
+        let result = categorize_io_error(error, "test");
+        // Should be an Io error
+        assert!(matches!(result, crate::error::Error::Io(_)));
+    }
+
+    #[test]
+    fn test_skip_existing_file() {
+        // Task 11.2: Verify that download_asset skips existing files
+        use std::io::Write;
+        let temp_dir = std::env::temp_dir();
+        let test_file = temp_dir.join("test_existing_asset.bin");
+
+        // Create a test file
+        let mut file = File::create(&test_file).unwrap();
+        file.write_all(b"test content").unwrap();
+        drop(file);
+
+        // Create a client (won't be used since file exists)
+        let client = reqwest::blocking::Client::new();
+
+        // Try to download to existing path - should succeed without network call
+        let result = download_asset(
+            &client,
+            "fake_token",
+            "https://github.com/user-attachments/assets/test-uuid",
+            &test_file,
+        );
+
+        // Should succeed (file exists, download skipped)
+        assert!(result.is_ok());
+
+        // Clean up
+        std::fs::remove_file(&test_file).ok();
     }
 
     // Integration tests for download functions (Tasks 5.7, 5.8)

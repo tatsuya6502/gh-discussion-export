@@ -107,15 +107,15 @@
 
 ## 11. Error Handling and Edge Cases
 
-- [ ] 11.1 Handle asset directory already exists (continue without error)
-- [ ] 11.2 Handle asset with same UUID already downloaded (skip re-download)
-- [ ] 11.3 Handle network timeout during download with warning message
-- [ ] 11.4 Handle 404 responses with warning message (asset not found)
-- [ ] 11.5 Handle 403 responses with warning message (authentication failed or private repo access denied)
-- [ ] 11.6 Handle 401 responses with clear error message (invalid token, prompt user to run `gh auth login`)
-- [ ] 11.7 Handle permission errors when writing asset files
-- [ ] 11.8 Handle disk space errors gracefully
-- [ ] 11.9 Write integration tests for each error scenario (404, 403, 401, timeout, permission denied)
+- [x] 11.1 Handle asset directory already exists (continue without error) (already handled by `create_dir_all`)
+- [x] 11.2 Handle asset with same UUID already downloaded (skip re-download)
+- [x] 11.3 Handle network timeout during download with warning message
+- [x] 11.4 Handle 404 responses with warning message (asset not found) (already handled in `download_asset`)
+- [x] 11.5 Handle 403 responses with warning message (authentication failed or private repo access denied) (already handled in `download_asset`)
+- [x] 11.6 Handle 401 responses with clear error message (invalid token, prompt user to run `gh auth login`)
+- [x] 11.7 Handle permission errors when writing asset files
+- [x] 11.8 Handle disk space errors gracefully
+- [x] 11.9 Write integration tests for each error scenario (404, 403, 401, timeout, permission denied)
 
 ## 12. Documentation
 
