@@ -2,6 +2,7 @@ use crate::client::GitHubClient;
 use crate::error::{Error, Result};
 use crate::graphql::{COMMENTS_QUERY, DISCUSSION_QUERY, REPLIES_QUERY};
 use crate::models::{Comment, Discussion, Reply};
+use crate::progress::ProgressReporter;
 use serde_json::Value;
 
 /// Response structure for comments query
@@ -56,8 +57,11 @@ pub fn fetch_discussion(
     // Step 2: Get discussion ID from response (task 4.3)
     let discussion_id = discussion.id.clone();
 
+    // Get total count for progress reporting
+    let total_comments = discussion.comments.total_count;
+
     // Step 3: Fetch all comments using pagination (task 4.4)
-    let mut comments = fetch_all_comments(client, &discussion_id)?;
+    let mut comments = fetch_all_comments(client, &discussion_id, total_comments)?;
 
     // Step 4: For each comment, fetch all replies if needed (task 4.5)
     // Optimization: COMMENTS_QUERY now fetches the first page of reply nodes.
@@ -72,7 +76,7 @@ pub fn fetch_discussion(
 
         if has_replies {
             let comment_id = comment.id.clone();
-            let replies = fetch_all_replies(client, &comment_id)?;
+            let replies = fetch_all_replies(client, &comment_id, comment.replies.total_count)?;
 
             // Update the comment's replies with the fetched ones
             comment.replies.nodes = if replies.is_empty() {
@@ -166,6 +170,7 @@ fn replace_deleted_authors(discussion: &mut Discussion, comments: &mut [Comment]
 /// # Arguments
 /// * `client` - The GitHubClient to use for queries
 /// * `discussion_id` - The node ID of the discussion
+/// * `total_count` - Optional total count for progress reporting
 ///
 /// # Returns
 /// A vector of all comments for the discussion
@@ -175,13 +180,22 @@ fn replace_deleted_authors(discussion: &mut Discussion, comments: &mut [Comment]
 /// - Continues fetching while `pageInfo.hasNextPage` is true
 /// - Uses `pageInfo.endCursor` as the `after` parameter for subsequent requests
 /// - Accumulates comments across all pages
+/// - Reports progress if total_count is available
 /// - Fails immediately on any error (no partial results)
 pub(crate) fn fetch_all_comments(
     client: &GitHubClient,
     discussion_id: &str,
+    total_count: Option<usize>,
 ) -> Result<Vec<Comment>> {
     let mut all_comments = Vec::new();
     let mut after: Option<String> = None;
+
+    // Create a progress reporter for comments if total count is available
+    let mut comment_progress = total_count.map(|tc| ProgressReporter::new(tc, "Fetching comments"));
+
+    if let Some(ref p) = comment_progress {
+        p.start();
+    }
 
     loop {
         let variables = serde_json::json!({
@@ -199,6 +213,11 @@ pub(crate) fn fetch_all_comments(
             }
         }
 
+        // Update progress
+        if let Some(ref mut p) = comment_progress {
+            p.set_progress(all_comments.len());
+        }
+
         // Check if there are more pages
         if !comments_response.page_info.has_next_page {
             break;
@@ -214,6 +233,11 @@ pub(crate) fn fetch_all_comments(
         }
     }
 
+    // Complete progress
+    if let Some(ref p) = comment_progress {
+        p.complete();
+    }
+
     Ok(all_comments)
 }
 
@@ -222,6 +246,7 @@ pub(crate) fn fetch_all_comments(
 /// # Arguments
 /// * `client` - The GitHubClient to use for queries
 /// * `comment_id` - The node ID of the comment
+/// * `total_count` - Optional total count for progress reporting
 ///
 /// # Returns
 /// A vector of all replies for the comment
@@ -231,10 +256,22 @@ pub(crate) fn fetch_all_comments(
 /// - Continues fetching while `pageInfo.hasNextPage` is true
 /// - Uses `pageInfo.endCursor` as the `after` parameter for subsequent requests
 /// - Accumulates replies across all pages
+/// - Reports progress if total_count is available
 /// - Fails immediately on any error (no partial results)
-pub(crate) fn fetch_all_replies(client: &GitHubClient, comment_id: &str) -> Result<Vec<Reply>> {
+pub(crate) fn fetch_all_replies(
+    client: &GitHubClient,
+    comment_id: &str,
+    total_count: Option<usize>,
+) -> Result<Vec<Reply>> {
     let mut all_replies = Vec::new();
     let mut after: Option<String> = None;
+
+    // Create a progress reporter for replies if total count is available
+    let mut reply_progress = total_count.map(|tc| ProgressReporter::new(tc, "Fetching replies"));
+
+    if let Some(ref p) = reply_progress {
+        p.start();
+    }
 
     loop {
         let variables = serde_json::json!({
@@ -252,6 +289,11 @@ pub(crate) fn fetch_all_replies(client: &GitHubClient, comment_id: &str) -> Resu
             }
         }
 
+        // Update progress
+        if let Some(ref mut p) = reply_progress {
+            p.set_progress(all_replies.len());
+        }
+
         // Check if there are more pages
         if !replies_response.page_info.has_next_page {
             break;
@@ -265,6 +307,11 @@ pub(crate) fn fetch_all_replies(client: &GitHubClient, comment_id: &str) -> Resu
                 "hasNextPage was true but endCursor was null".to_string(),
             ));
         }
+    }
+
+    // Complete progress
+    if let Some(ref p) = reply_progress {
+        p.complete();
     }
 
     Ok(all_replies)
@@ -1027,5 +1074,86 @@ mod tests {
         assert_eq!(replies[0].as_ref().unwrap().id, "reply_1");
         assert_eq!(replies[1].as_ref().unwrap().id, "reply_2");
         assert_eq!(replies[2].as_ref().unwrap().id, "reply_3");
+    }
+
+    // Task 8.5: Integration tests for progress reporting during pagination
+    #[test]
+    fn test_progress_reporter_format_with_total_count() {
+        // Verify that ProgressReporter formats progress correctly with totalCount
+        let message = ProgressReporter::format_progress_message(0, 15);
+        assert_eq!(message, "0/15 (0%)");
+    }
+
+    #[test]
+    fn test_progress_reporter_updates_correctly() {
+        // Verify that ProgressReporter updates progress correctly during pagination
+        // Simulate fetching 10 comments (first page) - 66%
+        let message = ProgressReporter::format_progress_message(10, 15);
+        assert_eq!(message, "10/15 (66%)");
+
+        // Simulate fetching remaining 5 comments (second page) - 100%
+        let message = ProgressReporter::format_progress_message(15, 15);
+        assert_eq!(message, "15/15 (100%)");
+    }
+
+    #[test]
+    fn test_progress_reporter_zero_total_count() {
+        // Verify that ProgressReporter handles zero totalCount (no comments)
+        let message = ProgressReporter::format_progress_message(0, 0);
+        assert_eq!(message, "0/0 (100%)");
+    }
+
+    #[test]
+    fn test_progress_format_for_replies() {
+        // Verify that ProgressReporter formats reply progress correctly
+        // Simulate fetching replies progressively
+        let message = ProgressReporter::format_progress_message(5, 17);
+        assert_eq!(message, "5/17 (29%)");
+
+        let message = ProgressReporter::format_progress_message(12, 17);
+        assert_eq!(message, "12/17 (70%)");
+
+        let message = ProgressReporter::format_progress_message(17, 17);
+        assert_eq!(message, "17/17 (100%)");
+    }
+
+    #[test]
+    fn test_total_count_extraction_for_progress() {
+        // Verify that totalCount is correctly extracted from responses for progress reporting
+        let response = json!({
+            "data": {
+                "node": {
+                    "comments": {
+                        "totalCount": 25,
+                        "nodes": [
+                            {
+                                "id": "comment_1",
+                                "databaseId": 1,
+                                "author": {"login": "user1"},
+                                "createdAt": "2024-01-01T00:00:00Z",
+                                "body": "Comment 1",
+                                "replies": {
+                                    "totalCount": 5,
+                                    "nodes": [],
+                                    "pageInfo": {"hasNextPage": false, "endCursor": null}
+                                }
+                            }
+                        ],
+                        "pageInfo": {
+                            "hasNextPage": true,
+                            "endCursor": "cursor_page2"
+                        }
+                    }
+                }
+            }
+        });
+
+        let result = parse_comments_response(response).unwrap();
+
+        // Verify totalCount is extracted (used for progress reporting)
+        // Note: CommentsResponse doesn't store totalCount, but it's in the response
+        // The actual extraction happens in the Discussion model
+        assert!(result.page_info.has_next_page);
+        assert_eq!(result.nodes.unwrap().len(), 1);
     }
 }

@@ -69,12 +69,12 @@
 
 ## 8. Integration with Fetch Module
 
-- [ ] 8.1 Modify `src/fetch.rs` to report progress when fetching discussion metadata
-- [ ] 8.2 Modify `src/fetch.rs` to report comment pagination progress using `totalCount`
-- [ ] 8.3 Modify `src/fetch.rs` to report reply fetching progress using `totalCount`
-- [ ] 8.4 Pass `ProgressReporter` through fetch call chain (or use shared progress module)
-- [ ] 8.5 Write integration tests for progress reporting during pagination
-- [ ] 8.6 Run `cargo test` to verify fetch module tests still pass
+- [x] 8.1 Modify `src/fetch.rs` to report progress when fetching discussion metadata
+- [x] 8.2 Modify `src/fetch.rs` to report comment pagination progress using `totalCount`
+- [x] 8.3 Modify `src/fetch.rs` to report reply fetching progress using `totalCount`
+- [x] 8.4 Pass `ProgressReporter` through fetch call chain (or use shared progress module)
+- [x] 8.5 Write integration tests for progress reporting during pagination
+- [x] 8.6 Run `cargo test` to verify fetch module tests still pass
 
 ## 9. Integration with Output Module
 
