@@ -50,7 +50,7 @@ fn main() {
     };
 
     // Generate Markdown output
-    let markdown = format_discussion(&discussion, &owner, &repo);
+    let markdown = format_discussion(&discussion, &owner, &repo, None);
 
     // Write output file
     match write_output(&markdown, &output_path) {
