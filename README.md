@@ -58,6 +58,8 @@ gh-discussion-export [--repo <OWNER/REPO>] [--output <PATH>] <NUMBER>
 |:-------- |:----------- |:------- |
 | `--repo <OWNER/REPO>` | GitHub repository in OWNER/REPO format | Auto-detected from Git repository |
 | `-o <PATH>, --output <PATH>` | Output file path | `<number>-discussion.md` |
+| `--no-assets` | Skip downloading embedded assets (images) | Download assets |
+| `-j <N>, --parallel <N>` | Number of parallel asset downloads | 4 |
 
 ### Help
 
@@ -102,6 +104,89 @@ gh-discussion-export 993
 ```bash
 gh-discussion-export --repo cli/cli 993 -o my-discussion-archive.md
 ```
+
+### Export a discussion with embedded assets
+
+When a discussion contains embedded images (from GitHub's user-attachments assets), the tool automatically downloads them and transforms the URLs to reference local files:
+
+```bash
+gh-discussion-export --repo owner/repo 123
+```
+
+This creates:
+- `123-discussion.md` - Markdown file with local asset references
+- `123-discussion-assets/` - Directory containing downloaded images
+
+### Export with custom parallelism
+
+Control the number of concurrent asset downloads:
+
+```bash
+gh-discussion-export --repo owner/repo 123 -j 8
+```
+
+### Skip asset download
+
+Export without downloading embedded assets:
+
+```bash
+gh-discussion-export --repo owner/repo 123 --no-assets
+```
+
+## Asset Download Behavior
+
+When downloading assets, the tool:
+
+1. **Detects** all GitHub asset URLs from HTML `<img>` tags and Markdown image syntax
+2. **Deduplicates** assets by UUID (same asset referenced multiple times is only downloaded once)
+3. **Downloads** assets in parallel using the GitHub authentication token
+4. **Transforms** URLs to reference local paths while preserving original URLs
+
+### Asset Directory Naming
+
+Downloaded assets are stored in a directory named `<discussion-number>-discussion-assets/` next to the Markdown file.
+
+Each asset is named using its UUID with the appropriate file extension (determined from the Content-Type header):
+- `6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png`
+- `7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg`
+
+### URL Transformation
+
+GitHub asset URLs in the exported Markdown are transformed to reference local paths:
+
+**Markdown images:**
+```md
+<!-- Before -->
+![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7)
+
+<!-- After -->
+![Diagram](123-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 -->
+```
+
+**HTML images:**
+```html
+<!-- Before -->
+<img src="https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7" alt="Diagram" />
+
+<!-- After -->
+<img src="123-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png" alt="Diagram" data-original-url="https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7" />
+```
+
+The original URL is preserved for reference:
+- **Markdown**: In an HTML comment after the image
+- **HTML**: In the `data-original-url` attribute
+
+### Authentication
+
+Assets from private repositories require authentication, using the same GitHub token as discussion access (retrieved via `gh auth token`).
+
+**Error messages:**
+- **401 Unauthorized**: Invalid token - run `gh auth login` to re-authenticate
+- **403 Forbidden**: Authentication failed or access denied - ensure you have access to the repository
+
+### Offline Viewing
+
+Once assets are downloaded, the exported Markdown can be viewed offline. All images reference local files, so no network connection is required.
 
 ## Output Format
 
@@ -160,8 +245,9 @@ The tool fetches discussion data from GitHub's GraphQL API and formats it as Mar
 1. **Authentication**: Retrieves GitHub token via `gh auth token` (requires GitHub CLI).
 2. **GraphQL Queries**: Queries GitHub's GraphQL API for discussion metadata.
 3. **Pagination**: Uses cursor-based pagination to fetch all comments and replies.
-4. **Formatting**: Generates structured Markdown with hierarchical headings.
-5. **Output**: Writes to a single UTF-8 encoded file with LF line endings.
+4. **Asset Detection & Download**: Detects remote assets in comments, downloads them to `<number>-discussion-assets/`, and rewrites URLs to local paths.
+5. **Formatting**: Generates structured Markdown with hierarchical headings.
+6. **Output**: Writes to a single UTF-8 encoded file with LF line endings.
 
 ### OpenSpec-Driven Development
 
@@ -179,6 +265,9 @@ The codebase is organized into the following specifications:
 - **github-api-models** &mdash; serde models for GraphQL API responses.
 - **graphql-client** &mdash; HTTP client and GraphQL query execution.
 - **discussion-fetching** &mdash; Cursor-based pagination for discussions, comments, and replies.
+- **asset-download** &mdash; Parallel downloading of GitHub assets to local directory.
+- **url-transformation** &mdash; Markdown and HTML URL transformation with local path mapping.
+- **progress-reporting** &mdash; Terminal-friendly progress display with TTY detection.
 - **markdown-output-generation** &mdash; Markdown formatting and file writing.
 
 ## Contributing

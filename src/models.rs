@@ -42,6 +42,9 @@ pub struct Comment {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct CommentReplies {
+    /// Total count of replies (optional, may not be present in all queries)
+    #[serde(default)]
+    pub total_count: Option<usize>,
     /// nodes may be missing in COMMENTS_QUERY responses (only pageInfo is returned)
     #[serde(default)]
     pub nodes: Option<Vec<Option<Reply>>>,
@@ -68,6 +71,9 @@ pub struct Discussion {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DiscussionComments {
+    /// Total count of comments (optional, may not be present in all queries)
+    #[serde(default)]
+    pub total_count: Option<usize>,
     pub nodes: Option<Vec<Option<Comment>>>,
     pub page_info: PageInfo,
 }
@@ -75,6 +81,7 @@ pub struct DiscussionComments {
 impl Default for DiscussionComments {
     fn default() -> Self {
         Self {
+            total_count: None,
             nodes: None,
             page_info: PageInfo {
                 has_next_page: false,
@@ -280,5 +287,45 @@ mod tests {
         assert!(discussion.author.is_none()); // Discussion author is null
         let comments = discussion.comments.nodes.unwrap();
         assert!(comments[0].as_ref().unwrap().author.is_none()); // Comment author is null
+    }
+
+    #[test]
+    fn test_total_count_parsing() {
+        let json_data = json!({
+            "totalCount": 42,
+            "nodes": [
+                {
+                    "id": "comment_1",
+                    "databaseId": 456,
+                    "author": {"login": "testuser"},
+                    "createdAt": "2024-01-15T11:00:00Z",
+                    "body": "Test comment",
+                    "replies": {
+                        "totalCount": 10,
+                        "nodes": [],
+                        "pageInfo": {"hasNextPage": false, "endCursor": null}
+                    }
+                }
+            ],
+            "pageInfo": {"hasNextPage": false, "endCursor": null}
+        });
+
+        let comments: DiscussionComments = serde_json::from_value(json_data).unwrap();
+        assert_eq!(comments.total_count, Some(42));
+        assert!(comments.nodes.is_some());
+        let nodes = comments.nodes.unwrap();
+        let comment = nodes[0].as_ref().unwrap();
+        assert_eq!(comment.replies.total_count, Some(10));
+    }
+
+    #[test]
+    fn test_total_count_optional() {
+        let json_data = json!({
+            "nodes": [],
+            "pageInfo": {"hasNextPage": false, "endCursor": null}
+        });
+
+        let comments: DiscussionComments = serde_json::from_value(json_data).unwrap();
+        assert_eq!(comments.total_count, None);
     }
 }

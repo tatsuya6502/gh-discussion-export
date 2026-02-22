@@ -40,6 +40,7 @@ query ($id: ID!, $after: String) {
     node(id: $id) {
         ... on Discussion {
             comments(first: 100, after: $after) {
+                totalCount
                 nodes {
                     id
                     databaseId
@@ -49,6 +50,7 @@ query ($id: ID!, $after: String) {
                     createdAt
                     body
                     replies(first: 100) {
+                        totalCount
                         nodes {
                             id
                             databaseId
@@ -88,6 +90,7 @@ query ($id: ID!, $after: String) {
     node(id: $id) {
         ... on DiscussionComment {
             replies(first: 100, after: $after) {
+                totalCount
                 nodes {
                     id
                     databaseId

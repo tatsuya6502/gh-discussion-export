@@ -2,11 +2,13 @@
 //
 // This module generates lossless Markdown archives of GitHub Discussions,
 // preserving all content verbatim except for heading escape (to preserve
-// document structure).
+// document structure) and optional asset URL transformation.
 
 use crate::error::{Error, Result};
 use crate::models::Discussion;
+use crate::transform::{transform_comment_body, transform_discussion_body, transform_reply_body};
 use chrono::SecondsFormat;
+use std::collections::HashMap;
 use std::fs;
 
 #[cfg(test)]
@@ -93,11 +95,24 @@ pub(crate) fn generate_header(discussion: &Discussion, owner: &str, repo: &str) 
 /// Returns a String containing:
 /// - ## Original Post
 /// - _author: <login> (<ISO8601>)_
-/// - <body content verbatim except heading escape>
+/// - <body content verbatim except heading escape and optional asset transformation>
 /// - ---
-pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
+///
+/// # Arguments
+/// * `discussion` - The discussion to generate the post for
+/// * `asset_map` - Optional mapping from UUID to local file path for asset URL transformation
+pub(crate) fn generate_original_post(
+    discussion: &Discussion,
+    asset_map: Option<&HashMap<String, String>>,
+) -> String {
     let author = get_author_login(discussion.author.as_ref());
-    let body = process_body(&discussion.body);
+    let body = match asset_map {
+        Some(map) => {
+            let transformed = transform_discussion_body(&discussion.body, map);
+            process_body(&transformed)
+        }
+        None => process_body(&discussion.body),
+    };
     format!(
         "## Original Post\n\n_author: {} ({})_\n\n{}\n\n---\n",
         author,
@@ -114,13 +129,20 @@ pub(crate) fn generate_original_post(discussion: &Discussion) -> String {
 /// - ## Comments
 /// - For each comment: ### Comment <N>
 ///   - _author: <login> (<ISO8601>)_
-///   - <body content verbatim except heading escape>
+///   - <body content verbatim except heading escape and optional asset transformation>
 ///   - For each reply: #### Reply <N.M>
 ///     - _author: <login> (<ISO8601>)_
-///     - <body content verbatim except heading escape>
+///     - <body content verbatim except heading escape and optional asset transformation>
 ///
 /// If there are no comments, still emits the ## Comments heading.
-pub(crate) fn generate_comments(discussion: &Discussion) -> String {
+///
+/// # Arguments
+/// * `discussion` - The discussion to generate comments for
+/// * `asset_map` - Optional mapping from UUID to local file path for asset URL transformation
+pub(crate) fn generate_comments(
+    discussion: &Discussion,
+    asset_map: Option<&HashMap<String, String>>,
+) -> String {
     let mut output = String::from("## Comments\n\n");
 
     if let Some(ref comments) = discussion.comments.nodes {
@@ -128,7 +150,13 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
         for comment in comments.iter().flatten() {
             comment_num += 1;
             let author = get_author_login(comment.author.as_ref());
-            let body = process_body(&comment.body);
+            let body = match asset_map {
+                Some(map) => {
+                    let transformed = transform_comment_body(&comment.body, map);
+                    process_body(&transformed)
+                }
+                None => process_body(&comment.body),
+            };
 
             output.push_str(&format!(
                 "\n### Comment {}\n\n_author: {} ({})_\n\n{}\n\n",
@@ -146,7 +174,13 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
                 for reply in replies.iter().flatten() {
                     reply_num += 1;
                     let reply_author = get_author_login(reply.author.as_ref());
-                    let reply_body = process_body(&reply.body);
+                    let reply_body = match asset_map {
+                        Some(map) => {
+                            let transformed = transform_reply_body(&reply.body, map);
+                            process_body(&transformed)
+                        }
+                        None => process_body(&reply.body),
+                    };
 
                     output.push_str(&format!(
                         "\n#### Reply {}.{}\n\n_author: {} ({})_\n\n{}\n\n",
@@ -169,11 +203,22 @@ pub(crate) fn generate_comments(discussion: &Discussion) -> String {
 /// Concatenates header, original post, and comments sections.
 /// Each section already includes proper trailing newlines.
 ///
+/// # Arguments
+/// * `discussion` - The discussion to format
+/// * `owner` - Repository owner
+/// * `repo` - Repository name
+/// * `asset_map` - Optional mapping from UUID to local file path for asset URL transformation
+///
 /// Returns complete Markdown String ready for file output.
-pub fn format_discussion(discussion: &Discussion, owner: &str, repo: &str) -> String {
+pub fn format_discussion(
+    discussion: &Discussion,
+    owner: &str,
+    repo: &str,
+    asset_map: Option<&HashMap<String, String>>,
+) -> String {
     let header = generate_header(discussion, owner, repo);
-    let original_post = generate_original_post(discussion);
-    let comments = generate_comments(discussion);
+    let original_post = generate_original_post(discussion, asset_map);
+    let comments = generate_comments(discussion, asset_map);
 
     format!("{}{}{}", header, original_post, comments)
 }
@@ -221,6 +266,7 @@ mod tests {
                 .with_timezone(&Utc),
             body: body.to_string(),
             replies: crate::models::CommentReplies {
+                total_count: None,
                 nodes: Some(vec![]),
                 page_info: Default::default(),
             },
@@ -252,7 +298,7 @@ mod tests {
     #[test]
     fn test_generate_original_post() {
         let discussion = make_discussion();
-        let post = generate_original_post(&discussion);
+        let post = generate_original_post(&discussion, None);
 
         assert!(post.contains("## Original Post"));
         assert!(post.contains("_author: testuser (2024-01-15T10:30:00Z)_"));
@@ -264,7 +310,7 @@ mod tests {
     fn test_generate_original_post_with_deleted_author() {
         let mut discussion = make_discussion();
         discussion.author = None;
-        let post = generate_original_post(&discussion);
+        let post = generate_original_post(&discussion, None);
 
         assert!(post.contains("_author: <deleted>"));
         assert!(post.contains("This is the original post body."));
@@ -277,7 +323,7 @@ mod tests {
         let comment2 = make_comment(Some("user2"), "Second comment");
 
         discussion.comments.nodes = Some(vec![Some(comment1), Some(comment2)]);
-        let comments = generate_comments(&discussion);
+        let comments = generate_comments(&discussion, None);
 
         assert!(comments.contains("## Comments"));
         assert!(comments.contains("### Comment 1"));
@@ -290,7 +336,7 @@ mod tests {
     fn test_generate_comments_with_no_comments() {
         let mut discussion = make_discussion();
         discussion.comments.nodes = Some(vec![]);
-        let comments = generate_comments(&discussion);
+        let comments = generate_comments(&discussion, None);
 
         assert!(comments.contains("## Comments"));
         // Should not contain any comment or reply headings
@@ -362,7 +408,7 @@ mod tests {
     #[test]
     fn test_format_discussion_complete_output() {
         let discussion = make_discussion();
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         // Check all sections are present
         assert!(formatted.contains("# Test Discussion"));
@@ -390,7 +436,7 @@ mod tests {
         comment.replies.nodes = Some(vec![Some(reply)]);
         discussion.comments.nodes = Some(vec![Some(comment)]);
 
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         // Check heading levels
         assert!(formatted.contains("# Test Discussion")); // Level 1
@@ -471,7 +517,7 @@ mod tests {
         comment2.replies.nodes = Some(vec![Some(reply2_1)]);
         discussion.comments.nodes = Some(vec![Some(comment1), Some(comment2)]);
 
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         // Check proper reply numbering
         assert!(formatted.contains("### Comment 1"));
@@ -490,7 +536,7 @@ mod tests {
         let comment = make_comment(Some("user1"), "Comment without replies");
 
         discussion.comments.nodes = Some(vec![Some(comment)]);
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         assert!(formatted.contains("### Comment 1"));
         assert!(formatted.contains("Comment without replies"));
@@ -504,7 +550,7 @@ mod tests {
         let comment = make_comment(None, "Comment from deleted user");
 
         discussion.comments.nodes = Some(vec![Some(comment)]);
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         assert!(formatted.contains("_author: <deleted>"));
         assert!(formatted.contains("Comment from deleted user"));
@@ -528,7 +574,7 @@ mod tests {
         comment.replies.nodes = Some(vec![Some(reply)]);
         discussion.comments.nodes = Some(vec![Some(comment)]);
 
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         assert!(formatted.contains("#### Reply 1.1"));
         assert!(formatted.contains("_author: <deleted>"));
@@ -551,7 +597,7 @@ mod tests {
             Some(comment3),
         ]);
 
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         // Should number sequentially: Comment 1, Comment 2, Comment 3
         assert!(formatted.contains("### Comment 1"));
@@ -604,7 +650,7 @@ mod tests {
 
         discussion.comments.nodes = Some(vec![Some(comment1)]);
 
-        let formatted = format_discussion(&discussion, "owner", "repo");
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
 
         // Should number sequentially: Reply 1.1, Reply 1.2
         assert!(formatted.contains("#### Reply 1.1"));
@@ -614,5 +660,138 @@ mod tests {
 
         // Should not contain Reply 1.3 (only 2 actual replies)
         assert!(!formatted.contains("#### Reply 1.3"));
+    }
+
+    // Task 9.6: Integration tests for discussion export with assets
+    #[test]
+    fn test_format_discussion_with_asset_transformation() {
+        let mut discussion = make_discussion();
+        discussion.body = r#"## Overview
+
+<img src="https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7" alt="Diagram" />
+
+![Screenshot](https://github.com/user-attachments/assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b)
+"#.to_string();
+
+        // Add a comment with an asset
+        let mut comment = make_comment(
+            Some("user1"),
+            "![Comment Image](https://github.com/user-attachments/assets/abc123-test)",
+        );
+        comment.replies.nodes = Some(vec![Some(Reply {
+            id: "reply_id".to_string(),
+            database_id: 2,
+            author: Some(Author {
+                login: Some("replier".to_string()),
+            }),
+            created_at: DateTime::parse_from_rfc3339("2024-01-15T12:00:00Z")
+                .unwrap()
+                .with_timezone(&Utc),
+            body: r#"<img src="https://github.com/user-attachments/assets/def456-reply" alt="Reply Image" />"#.to_string(),
+        })]);
+        discussion.comments.nodes = Some(vec![Some(comment)]);
+
+        // Create asset map
+        let mut asset_map = HashMap::new();
+        asset_map.insert(
+            "6c72b402-4a5c-45cc-9b0a-50717f8a09a7".to_string(),
+            "123-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png".to_string(),
+        );
+        asset_map.insert(
+            "7d83c513-5b6d-46dd-a01b-61728e8b0a8b".to_string(),
+            "123-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg".to_string(),
+        );
+        asset_map.insert(
+            "abc123-test".to_string(),
+            "123-discussion-assets/abc123-test.png".to_string(),
+        );
+        asset_map.insert(
+            "def456-reply".to_string(),
+            "123-discussion-assets/def456-reply.png".to_string(),
+        );
+
+        let formatted = format_discussion(&discussion, "owner", "repo", Some(&asset_map));
+
+        // Check that assets are transformed in original post
+        assert!(
+            formatted
+                .contains("src=\"123-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png\"")
+        );
+        assert!(formatted.contains("data-original-url=\"https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7\""));
+        assert!(
+            formatted.contains("](123-discussion-assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b.jpg)")
+        );
+        assert!(formatted.contains("<!-- https://github.com/user-attachments/assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b -->"));
+
+        // Check that assets are transformed in comments
+        assert!(formatted.contains("](123-discussion-assets/abc123-test.png)"));
+        assert!(
+            formatted.contains("<!-- https://github.com/user-attachments/assets/abc123-test -->")
+        );
+
+        // Check that assets are transformed in replies
+        assert!(formatted.contains("src=\"123-discussion-assets/def456-reply.png\""));
+        assert!(formatted.contains(
+            "data-original-url=\"https://github.com/user-attachments/assets/def456-reply\""
+        ));
+    }
+
+    // Task 9.7: Integration tests for discussion export with --no-assets flag
+    #[test]
+    fn test_format_discussion_without_asset_transformation() {
+        let mut discussion = make_discussion();
+        discussion.body = r#"## Overview
+
+<img src="https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7" alt="Diagram" />
+
+![Screenshot](https://github.com/user-attachments/assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b)
+"#.to_string();
+
+        // Add a comment with an asset
+        let comment = make_comment(
+            Some("user1"),
+            "![Comment Image](https://github.com/user-attachments/assets/abc123-test)",
+        );
+        discussion.comments.nodes = Some(vec![Some(comment)]);
+
+        // Pass None to simulate --no-assets flag
+        let formatted = format_discussion(&discussion, "owner", "repo", None);
+
+        // Check that original URLs are preserved (no transformation)
+        assert!(formatted.contains("src=\"https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7\""));
+        assert!(formatted.contains(
+            "](https://github.com/user-attachments/assets/7d83c513-5b6d-46dd-a01b-61728e8b0a8b)"
+        ));
+        assert!(formatted.contains("](https://github.com/user-attachments/assets/abc123-test)"));
+
+        // Check that no local paths are present
+        assert!(!formatted.contains("123-discussion-assets/"));
+        assert!(!formatted.contains("data-original-url"));
+    }
+
+    #[test]
+    fn test_format_discussion_with_partial_asset_map() {
+        // Test that only assets in the map are transformed
+        let mut discussion = make_discussion();
+        discussion.body = r#"![Image1](https://github.com/user-attachments/assets/uuid-1)
+![Image2](https://github.com/user-attachments/assets/uuid-2)
+"#
+        .to_string();
+
+        // Only map one of the two assets
+        let mut asset_map = HashMap::new();
+        asset_map.insert(
+            "uuid-1".to_string(),
+            "123-discussion-assets/uuid-1.png".to_string(),
+        );
+
+        let formatted = format_discussion(&discussion, "owner", "repo", Some(&asset_map));
+
+        // First image should be transformed
+        assert!(formatted.contains("](123-discussion-assets/uuid-1.png)"));
+        assert!(formatted.contains("<!-- https://github.com/user-attachments/assets/uuid-1 -->"));
+
+        // Second image should remain unchanged (not in map)
+        assert!(formatted.contains("](https://github.com/user-attachments/assets/uuid-2)"));
     }
 }
