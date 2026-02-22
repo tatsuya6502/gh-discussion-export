@@ -86,20 +86,12 @@ fn main() {
             // No assets detected, skip directory creation
             None
         } else {
-            // Create asset directory in the same directory as the output file
+            // Prepare asset directory path (don't create yet)
             let asset_dir_name = args.asset_dir_name();
             let output_parent = Path::new(&output_path).parent().unwrap_or(Path::new("."));
             let asset_dir = output_parent.join(&asset_dir_name);
 
-            if let Err(e) = std::fs::create_dir_all(&asset_dir) {
-                eprintln!(
-                    "Error: Failed to create asset directory '{}': {}",
-                    asset_dir_name, e
-                );
-                std::process::exit(1);
-            }
-
-            // Download assets
+            // Download assets (directory will be created when writing files)
             let download_results = download_assets_parallel(
                 reqwest_client.client(),
                 &token,
@@ -130,26 +122,36 @@ fn main() {
                 }
             }
 
-            // Build asset_map from UUID to local path (only successful downloads)
-            let mut map = HashMap::new();
-            for result in &download_results {
-                if result.result.is_ok() {
-                    let local_path =
-                        format!("{}/{}{}", asset_dir_name, result.uuid, result.extension);
-                    map.insert(result.uuid.clone(), local_path);
+            // If all downloads failed, return None (no directory created, no transformation)
+            if success_count == 0 {
+                println!("Downloaded 0 asset(s)");
+                if failure_count > 0 {
+                    println!("Warning: {} asset(s) failed to download", failure_count);
                 }
-            }
+                None
+            } else {
+                // Build asset_map from UUID to local path (only successful downloads)
+                // Note: directory is already created by download_asset() when writing files
+                let mut map = HashMap::new();
+                for result in &download_results {
+                    if result.result.is_ok() {
+                        let local_path =
+                            format!("{}/{}{}", asset_dir_name, result.uuid, result.extension);
+                        map.insert(result.uuid.clone(), local_path);
+                    }
+                }
 
-            // Print summary
-            println!(
-                "Downloaded {} asset(s) to: {}",
-                success_count, asset_dir_name
-            );
-            if failure_count > 0 {
-                println!("Warning: {} asset(s) failed to download", failure_count);
-            }
+                // Print summary
+                println!(
+                    "Downloaded {} asset(s) to: {}",
+                    success_count, asset_dir_name
+                );
+                if failure_count > 0 {
+                    println!("Warning: {} asset(s) failed to download", failure_count);
+                }
 
-            Some(map)
+                Some(map)
+            }
         }
     } else {
         None
