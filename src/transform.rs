@@ -126,7 +126,8 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
                             && let Some(local_path) = asset_map.get(&_uuid.to_string())
                         {
                             // Build replacement string
-                            let before = &transformed_line[..absolute_bracket_end + 2]; // ![alt](
+                            let before =
+                                &transformed_line[absolute_img_start..absolute_bracket_end + 2]; // ![alt](
 
                             let replacement = match title {
                                 Some(t) => {
@@ -589,6 +590,23 @@ mod tests {
         let result = transform_markdown_images(text, &asset_map);
 
         assert!(result.ends_with('\n'));
+    }
+
+    #[test]
+    fn test_transform_markdown_image_with_prefix_text() {
+        let text = "See ![Diagram](https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7) for details";
+        let mut asset_map = HashMap::new();
+        asset_map.insert(
+            "6c72b402-4a5c-45cc-9b0a-50717f8a09a7".to_string(),
+            "1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png".to_string(),
+        );
+
+        let result = transform_markdown_images(text, &asset_map);
+
+        assert_eq!(
+            result,
+            "See ![Diagram](1041-discussion-assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7.png)<!-- https://github.com/user-attachments/assets/6c72b402-4a5c-45cc-9b0a-50717f8a09a7 --> for details"
+        );
     }
 
     #[test]
