@@ -119,21 +119,21 @@
 
 ## 12. Documentation
 
-- [ ] 12.1 Update README.md with new `--no-assets` and `-j` flag documentation
-- [ ] 12.2 Add example usage in README showing asset download behavior
-- [ ] 12.3 Update CLI help text (clap derive should handle most automatically)
-- [ ] 12.4 Document asset directory naming convention in README
-- [ ] 12.5 Document URL transformation behavior in README
-- [ ] 12.6 Document that assets from private repositories require authentication (same as discussion access)
-- [ ] 12.7 Document error messages for authentication failures (401, 403)
-- [ ] 12.8 Add CHANGELOG.md entry for new feature
+- [x] 12.1 Update README.md with new `--no-assets` and `-j` flag documentation
+- [x] 12.2 Add example usage in README showing asset download behavior
+- [x] 12.3 Update CLI help text (clap derive should handle most automatically)
+- [x] 12.4 Document asset directory naming convention in README
+- [x] 12.5 Document URL transformation behavior in README
+- [x] 12.6 Document that assets from private repositories require authentication (same as discussion access)
+- [x] 12.7 Document error messages for authentication failures (401, 403)
+- [x] 12.8 Add CHANGELOG.md entry for new feature
 
 ## 13. Final Verification
 
-- [ ] 13.1 Run `cargo check` to ensure no compilation errors
-- [ ] 13.2 Run `cargo clippy --lib --tests --all-features --all-targets` to ensure no warnings
-- [ ] 13.3 Run `cargo fmt --all` to ensure code formatting
-- [ ] 13.4 Run `cargo test` to ensure all tests pass
+- [x] 13.1 Run `cargo check` to ensure no compilation errors
+- [x] 13.2 Run `cargo clippy --lib --tests --all-features --all-targets` to ensure no warnings
+- [x] 13.3 Run `cargo fmt --all` to ensure code formatting
+- [x] 13.4 Run `cargo test` to ensure all tests pass
 - [ ] 13.5 Manually test with discussion containing multiple images
 - [ ] 13.6 Manually test with discussion containing no images
 - [ ] 13.7 Manually test with `--no-assets` flag
