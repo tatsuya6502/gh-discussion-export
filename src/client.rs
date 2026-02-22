@@ -15,6 +15,7 @@ pub trait HttpClient: Send + Sync {
 }
 
 /// Production HTTP client using reqwest
+#[derive(Clone)]
 pub struct ReqwestClient {
     client: reqwest::blocking::Client,
     token: String,
@@ -30,6 +31,16 @@ impl ReqwestClient {
             .map_err(|e| Error::Http(format!("Failed to create HTTP client: {}", e)))?;
 
         Ok(Self { client, token })
+    }
+
+    /// Get the underlying reqwest client for asset downloads
+    pub fn client(&self) -> &reqwest::blocking::Client {
+        &self.client
+    }
+
+    /// Get the GitHub token
+    pub fn token(&self) -> &str {
+        &self.token
     }
 }
 

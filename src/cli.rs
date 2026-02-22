@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use clap::Parser;
+use clap::{ArgAction, Parser};
 
 use crate::command_runner::CommandRunner;
 use crate::error::{Error, Result};
@@ -10,6 +10,14 @@ fn validate_positive_number(s: &str) -> std::result::Result<u64, String> {
     match s.parse::<u64>() {
         Ok(num) if num > 0 => Ok(num),
         _ => Err("Discussion number must be greater than zero.".to_string()),
+    }
+}
+
+/// Custom validator to ensure parallel count is at least 1
+fn validate_positive_parallel(s: &str) -> std::result::Result<usize, String> {
+    match s.parse::<usize>() {
+        Ok(n) if n >= 1 => Ok(n),
+        _ => Err("Parallel count must be at least 1.".to_string()),
     }
 }
 
@@ -38,6 +46,21 @@ pub struct CliArgs {
         help = "Output file path (default: <number>-discussion.md)"
     )]
     pub output: Option<String>,
+
+    /// Disable asset downloading (assets are downloaded by default)
+    #[arg(long, action = ArgAction::SetTrue, help = "Disable asset downloading")]
+    pub no_assets: bool,
+
+    /// Number of parallel asset downloads (default: 4)
+    #[arg(
+        short = 'j',
+        long,
+        value_name = "NUM",
+        default_value = "4",
+        value_parser = validate_positive_parallel,
+        help = "Number of parallel asset downloads (default: 4)"
+    )]
+    pub parallel: usize,
 }
 
 impl CliArgs {
@@ -47,6 +70,16 @@ impl CliArgs {
             Some(path) => path.clone(),
             None => format!("{}-discussion.md", self.number),
         }
+    }
+
+    /// Check if assets should be downloaded based on --no-assets flag
+    pub fn should_download_assets(&self) -> bool {
+        !self.no_assets
+    }
+
+    /// Get the asset directory name for this discussion
+    pub fn asset_dir_name(&self) -> String {
+        format!("{}-discussion-assets", self.number)
     }
 
     /// Get both repository owner and name, avoiding duplicate `gh repo view` calls.
@@ -612,5 +645,95 @@ mod tests {
         } else {
             panic!("Expected Error::InvalidArgs");
         }
+    }
+
+    #[test]
+    fn test_parse_with_no_assets_flag() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--no-assets"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.number, 123);
+        assert!(cli.no_assets);
+        assert!(!cli.should_download_assets());
+    }
+
+    #[test]
+    fn test_parse_without_no_assets_flag() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.number, 123);
+        assert!(!cli.no_assets);
+        assert!(cli.should_download_assets());
+    }
+
+    #[test]
+    fn test_parse_with_parallel_flag() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--parallel"),
+            OsString::from("8"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.number, 123);
+        assert_eq!(cli.parallel, 8);
+    }
+
+    #[test]
+    fn test_parse_with_short_parallel_flag() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("-j"),
+            OsString::from("2"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.number, 123);
+        assert_eq!(cli.parallel, 2);
+    }
+
+    #[test]
+    fn test_parse_parallel_default() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.number, 123);
+        assert_eq!(cli.parallel, 4);
+    }
+
+    #[test]
+    fn test_asset_dir_name() {
+        let args = vec![OsString::from("gh-discussion-export"), OsString::from("42")];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert_eq!(cli.asset_dir_name(), "42-discussion-assets");
+    }
+
+    #[test]
+    fn test_should_download_assets_true() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(cli.should_download_assets());
+    }
+
+    #[test]
+    fn test_should_download_assets_false() {
+        let args = vec![
+            OsString::from("gh-discussion-export"),
+            OsString::from("123"),
+            OsString::from("--no-assets"),
+        ];
+        let cli = CliArgs::try_parse_from(args).unwrap();
+        assert!(!cli.should_download_assets());
     }
 }

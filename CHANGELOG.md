@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Asset download feature
+  - Automatic detection and download of embedded images from GitHub user-attachments assets
+  - Asset deduplication by UUID to avoid redundant downloads
+  - Parallel asset downloads with configurable parallelism (`-j`, `--parallel` flag, default: 4)
+  - `--no-assets` flag to skip asset download
+  - URL transformation to reference local asset paths
+  - Original URLs preserved in HTML comments (Markdown) and `data-original-url` attribute (HTML)
+  - Asset directory named `<number>-discussion-assets/` created alongside Markdown file
+  - Progress reporting for pagination and asset download operations
+  - Robust error handling for download failures (404, 403, 401, timeout, permission denied)
+  - File extension determined from Content-Type header
+  - Skip re-download if asset file already exists
+
 ## [0.1.1] &mdash; 2026-02-07
 
 ### Fixed
