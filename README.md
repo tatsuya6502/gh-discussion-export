@@ -245,8 +245,9 @@ The tool fetches discussion data from GitHub's GraphQL API and formats it as Mar
 1. **Authentication**: Retrieves GitHub token via `gh auth token` (requires GitHub CLI).
 2. **GraphQL Queries**: Queries GitHub's GraphQL API for discussion metadata.
 3. **Pagination**: Uses cursor-based pagination to fetch all comments and replies.
-4. **Formatting**: Generates structured Markdown with hierarchical headings.
-5. **Output**: Writes to a single UTF-8 encoded file with LF line endings.
+4. **Asset Detection & Download**: Detects remote assets in comments, downloads them to `<number>-discussion-assets/`, and rewrites URLs to local paths.
+5. **Formatting**: Generates structured Markdown with hierarchical headings.
+6. **Output**: Writes to a single UTF-8 encoded file with LF line endings.
 
 ### OpenSpec-Driven Development
 
@@ -264,6 +265,9 @@ The codebase is organized into the following specifications:
 - **github-api-models** &mdash; serde models for GraphQL API responses.
 - **graphql-client** &mdash; HTTP client and GraphQL query execution.
 - **discussion-fetching** &mdash; Cursor-based pagination for discussions, comments, and replies.
+- **asset-download** &mdash; Parallel downloading of GitHub assets to local directory.
+- **url-transformation** &mdash; Markdown and HTML URL transformation with local path mapping.
+- **progress-reporting** &mdash; Terminal-friendly progress display with TTY detection.
 - **markdown-output-generation** &mdash; Markdown formatting and file writing.
 
 ## Contributing

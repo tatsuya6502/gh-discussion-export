@@ -1166,9 +1166,8 @@ mod tests {
 
         let result = parse_comments_response(response).unwrap();
 
-        // Verify totalCount is extracted (used for progress reporting)
-        // Note: CommentsResponse doesn't store totalCount, but it's in the response
-        // The actual extraction happens in the Discussion model
+        // Verify totalCount is extracted for progress reporting
+        assert_eq!(result.total_count, Some(25));
         assert!(result.page_info.has_next_page);
         assert_eq!(result.nodes.unwrap().len(), 1);
     }

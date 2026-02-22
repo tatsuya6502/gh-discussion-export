@@ -93,9 +93,12 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
 
                 // Check for opening ( immediately after ]
                 if transformed_line[absolute_bracket_end..].starts_with("](") {
-                    // Find the closing )
-                    if let Some(paren_end) = transformed_line[absolute_bracket_end + 2..].find(')')
-                    {
+                    // Find the closing ), accounting for quoted titles that may contain )
+                    // Format: url or url "title" or url 'title'
+                    let paren_end =
+                        find_closing_paren(&transformed_line[absolute_bracket_end + 2..]);
+
+                    if let Some(paren_end) = paren_end {
                         let absolute_paren_end = absolute_bracket_end + 2 + paren_end;
 
                         // Extract the URL part (between ]( and ))
@@ -122,8 +125,8 @@ pub fn transform_markdown_images(text: &str, asset_map: &HashMap<String, String>
                         };
 
                         // Check if this is a GitHub asset URL
-                        if let Some(_uuid) = extract_asset_uuid(url)
-                            && let Some(local_path) = asset_map.get(&_uuid.to_string())
+                        if let Some(uuid) = extract_asset_uuid(url)
+                            && let Some(local_path) = asset_map.get(&uuid)
                         {
                             // Build replacement string
                             let before =
@@ -316,6 +319,45 @@ fn find_image_syntax(text: &str) -> Option<usize> {
             return Some(pos);
         }
         pos += 1;
+    }
+
+    None
+}
+
+/// Find the closing parenthesis in Markdown image syntax, accounting for quoted titles.
+///
+/// This function scans for `)` while respecting quoted strings, so that titles
+/// containing `)` characters (e.g., `![alt](url "title with ) paren")`) are handled correctly.
+///
+/// # Arguments
+/// * `text` - The text to search, starting after `](`
+///
+/// # Returns
+/// * `Some(usize)` - Position of the closing `)` if found
+/// * `None` - If no closing `)` is found
+fn find_closing_paren(text: &str) -> Option<usize> {
+    let bytes = text.as_bytes();
+    let mut in_single_quote = false;
+    let mut in_double_quote = false;
+    let mut i = 0;
+
+    while i < bytes.len() {
+        let ch = bytes[i];
+        let prev = if i > 0 { Some(bytes[i - 1]) } else { None };
+
+        match ch {
+            b'"' if prev != Some(b'\\') && !in_single_quote => {
+                in_double_quote = !in_double_quote;
+            }
+            b'\'' if prev != Some(b'\\') && !in_double_quote => {
+                in_single_quote = !in_single_quote;
+            }
+            b')' if !in_single_quote && !in_double_quote => {
+                return Some(i);
+            }
+            _ => {}
+        }
+        i += 1;
     }
 
     None
