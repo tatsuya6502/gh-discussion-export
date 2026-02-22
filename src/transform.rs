@@ -235,18 +235,24 @@ pub fn transform_reply_body(body: &str, asset_map: &HashMap<String, String>) -> 
 /// * `None` - If src attribute is not found
 fn extract_src_attribute(img_tag: &str) -> Option<String> {
     // Find src="..." or src='...'
-    if let Some(src_start) = img_tag.find("src=\"") {
-        let after_src = &img_tag[src_start + 5..];
-        if let Some(value_end) = after_src.find('"') {
-            return Some(after_src[..value_end].to_string());
+    // Check character before "src" to ensure it's a valid attribute boundary
+    for (pos, _) in img_tag.match_indices("src=\"") {
+        // Ensure "src" is preceded by whitespace or starts the attribute section
+        if pos == 0 || img_tag.as_bytes()[pos - 1].is_ascii_whitespace() {
+            let after_src = &img_tag[pos + 5..];
+            if let Some(value_end) = after_src.find('"') {
+                return Some(after_src[..value_end].to_string());
+            }
         }
     }
 
     // Try single quotes
-    if let Some(src_start) = img_tag.find("src='") {
-        let after_src = &img_tag[src_start + 5..];
-        if let Some(value_end) = after_src.find('\'') {
-            return Some(after_src[..value_end].to_string());
+    for (pos, _) in img_tag.match_indices("src='") {
+        if pos == 0 || img_tag.as_bytes()[pos - 1].is_ascii_whitespace() {
+            let after_src = &img_tag[pos + 5..];
+            if let Some(value_end) = after_src.find('\'') {
+                return Some(after_src[..value_end].to_string());
+            }
         }
     }
 
