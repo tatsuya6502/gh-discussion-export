@@ -277,8 +277,16 @@ fn transform_img_tag(img_tag: &str, old_src: &str, new_src: &str, original_url: 
     if !result.contains("data-original-url")
         && let Some(tag_end) = result.find('>')
     {
-        let before = &result[..tag_end];
-        let after = &result[tag_end..];
+        // Handle self-closing tags: insert before the closing /> not after /
+        let insert_pos = if tag_end > 0 && result.as_bytes()[tag_end - 1] == b'/' {
+            let slash_pos = tag_end - 1;
+            // Also trim any space before the slash
+            result[..slash_pos].trim_end().len()
+        } else {
+            tag_end
+        };
+        let before = &result[..insert_pos];
+        let after = &result[insert_pos..];
         result = format!("{} data-original-url=\"{}\"{}", before, original_url, after);
     }
 

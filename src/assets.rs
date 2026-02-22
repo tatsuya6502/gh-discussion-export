@@ -439,7 +439,7 @@ fn categorize_io_error(e: std::io::Error, operation: &str) -> crate::error::Erro
 /// * `parallel` - Maximum number of concurrent downloads
 ///
 /// # Returns
-/// * Vector of `DownloadResult`, one per URL, in the same order as input URLs
+/// * Vector of `DownloadResult`, one per URL (order is non-deterministic)
 pub fn download_assets_parallel(
     client: &reqwest::blocking::Client,
     token: &str,
